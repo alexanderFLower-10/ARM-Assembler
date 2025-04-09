@@ -48,7 +48,9 @@
     <Compile Include="Instruction.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ThreeParameterExectues.cs" />
     <Compile Include="ThreeParameters.cs" />
+    <Compile Include="TwoParameterExecutes.cs" />
     <Compile Include="TwoParameterInst.cs" />
   </ItemGroup>
   <ItemGroup>
