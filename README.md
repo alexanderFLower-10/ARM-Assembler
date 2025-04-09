@@ -29,17 +29,26 @@ This project implements an ARM assembly emulator that can parse and execute ARM 
 ## Project Structure
 
 - `ARMEmulator.cs`: Core emulator implementation
-- `Instruction.cs`: Base class for all instructions
-- `ThreeParameters.cs`: Handles three-parameter instructions
-- `TwoParameterInst.cs`: Handles two-parameter instructions
+- `BaseClass + Binary.cs`: Base class for all instructions, converting to binary operations etc
+- `BranchExecutions.cs`: Handles execution of branch instructions
 - `Branches.cs`: Implements branch and compare instructions
+- `CustomExceptions.cs`: To implement many custom exceptions in the future
 - `Program.cs`: Main program entry point and instruction parsing
+- `ThreeParameterExecutes.cs`: Handles three-parameter instruction execution
+- `ThreeParameters.cs`: Handles three-parameter instructions
+- `TwoParameterExecutes.cs`: Handles two-parameter instruction execution
+- `TwoParameterInst.cs`: Handles two-parameter instructions
+  
+  
 
 ## Usage
 
 **[In Progress]**
 
 This project is currently being developed into a working learning tool. The usage documentation will be updated once the interface and functionality are finalized.
+UPDATE: Assembler is now complete and ready to use via loading data into text file and entering filepath, consoleGUI with appropriate error handling, syntax highlighting,
+a debugging mode like Visual Studio with the ability to step and view variable (register and memory in this case) values. Will also implement the functionality
+to create this into a leetcode like applications, with example solution to problems alongside testing users solutions to problems etc.
 
 ## Supported Instruction Set
 
