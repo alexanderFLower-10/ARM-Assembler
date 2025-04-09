@@ -45,7 +45,9 @@
   <ItemGroup>
     <Compile Include="ARMEmulator.cs" />
     <Compile Include="Branches.cs" />
-    <Compile Include="Instruction.cs" />
+    <Compile Include="BaseClass + Binary.cs" />
+    <Compile Include="BranchExecutions.cs" />
+    <Compile Include="CustomExceptions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThreeParameterExectues.cs" />

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,7 +17,7 @@ namespace ARMAssember2
         private int[] Registers;
         private int[] Memory;
         Dictionary<string, int> labelsLocations;
-        bool SR;
+        string SR;
 
         public ARMEmulator(List<Instruction> instructions, int PC = 0, int RegistersCap = 16, int MemoryCap = 16)
         {
@@ -24,18 +26,31 @@ namespace ARMAssember2
             this.PC = PC;
             this.instructions = instructions;
             labelsLocations = new Dictionary<string, int>();
+            for(int i = 0; i < instructions.Count; i++)
+            {
+                if (instructions[i].GetType() == typeof(Label))
+                {
+                    Label temp = (Label)instructions[i];
+                    string labelname = temp.getLabel();
+                    if (!labelsLocations.ContainsKey(labelname))
+                    {
+                        labelsLocations.Add(labelname, i);
+                    }
+                    else throw new Exception("Label name in use");
+                    return;
+                }
+            }
         }
+
         public void Step()
         {
-            if (instructions[PC].GetType() == typeof(Label))
+            if (instructions[PC].GetType() == typeof(HALT))
             {
-                Label temp = (Label) instructions[PC];
-                string labelname = temp.getLabel();
-                if (!labelsLocations.ContainsKey(labelname))
-                {
-                    labelsLocations.Add(labelname, PC);
-                }
-                return;
+
+            }
+            else if (instructions[PC].GetType() == typeof(Label))
+            {
+               // pass on labels
             }
             else if(instructions[PC].GetType() == typeof(ThreeParameterInst))
             {
@@ -120,10 +135,68 @@ namespace ARMAssember2
                     throw new Exception($"You forgot to implement the inst map for the inst type {instType}");
                 }
             }
+            else if(instructions[PC].GetType() == typeof(CompareInst))
+            {
+                CompareInst Current = (CompareInst)instructions[PC];
+                CMP compare = new CMP();
+                compare.Execute(this, Current);
+            }
+            else if (instructions[PC].GetType() == typeof(BranchesInst))
+            {
+                BranchesInst Current = (BranchesInst)instructions[PC];
+                string label = Current.getLabel();
+                string condition = Current.getCondition();
+                if(condition == "R")
+                {
+                    if (labelsLocations.ContainsKey(label))
+                    {
+                        PC = labelsLocations[label];
+                    }
+                    else throw new Exception("Label doesn't exist");
+
+                }
+                else if(condition == "EQ")
+                {
+                    if(SR == "EQ")
+                    {
+                        if (labelsLocations.ContainsKey(label))
+                        {
+                            PC = labelsLocations[label];
+                        }
+                        else throw new Exception("Label doesn't exist");
+                    }
+                }
+                else if (condition == "LT")
+                {
+                    if (SR == "LT")
+                    {
+                        if (labelsLocations.ContainsKey(label))
+                        {
+                            PC = labelsLocations[label];
+                        }
+                        else throw new Exception("Label doesn't exist");
+                    }
+                }
+                else if (condition == "GT")
+                {
+                    if (SR == "GT")
+                    {
+                        if (labelsLocations.ContainsKey(label))
+                        {
+                            PC = labelsLocations[label];
+                        }
+                        else throw new Exception("Label doesn't exist");
+                    }
+                }
+            }
         }
 
-        
-
+        public void HALT()
+        {
+            throw new HALTException("HALT PROGRAM (PLS CATCH THIS)");
+        }
+        public string getSR() { return SR; }
+        public void setSR(string s) { SR = s; }
         public int GetRegisterVal(int index) { return Registers[index]; }   
         public int GetMemoryVal(int index) {return Memory[index]; }
 

@@ -31,6 +31,11 @@ namespace ARMAssember2
                     string temp = inst.Substring(0, inst.Length - 1);
                     list.Add(createLabel(temp));
                 }
+                else if(inst == "HALT")
+                {
+                    HALT h =  new HALT();
+                    list.Add(h);
+                }
                 else
                 {
                     string instType = inst[0].ToString() + inst[1].ToString() + inst[2].ToString();
@@ -69,11 +74,11 @@ namespace ARMAssember2
 
         static TwoParameterInst getTwoParInst(string[] operands, string instType)
         {
-            return new TwoParameterInst(instType, Convert.ToInt32(operands[0]), operands[1]);
+            return new TwoParameterInst(instType, Convert.ToInt32(operands[0].Substring(1)), operands[1].Substring(1));
         }
         static ThreeParameterInst getThreeParInst(string[] operands, string instType)
         {
-            return new ThreeParameterInst(instType, Convert.ToInt32(operands[0]), Convert.ToInt32(operands[1]), operands[2]);
+            return new ThreeParameterInst(instType, Convert.ToInt32(operands[0].Substring(1)), Convert.ToInt32(operands[1].Substring(1)), operands[2]);
         }
 
         static BranchesInst getBranchInst(string inst)

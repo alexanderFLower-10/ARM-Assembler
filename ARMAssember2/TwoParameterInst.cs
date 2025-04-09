@@ -25,7 +25,7 @@ namespace ARMAssember2
             }
             this.operand2 = tuple.Item2;
         }
-
+        public int getRd() { return Rd; }
         public string GetInstType() { return inst; }
         public void setOperand2(int value) { operand2 = value; }
         public int getOperand2() { return operand2; }

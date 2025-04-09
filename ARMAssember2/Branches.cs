@@ -11,11 +11,13 @@ namespace ARMAssember2
     {
         private string label;
         private string condition; 
-        public BranchesInst( string label, string condition = "r")
+        public BranchesInst( string label, string condition = "R")
         {
             this.label = label;
             this.condition = condition;
         }
+        public string getLabel() { return label; }
+        public string getCondition() { return condition; }
     }
     public class CompareInst : Instruction
     {
@@ -29,7 +31,8 @@ namespace ARMAssember2
             addresingType = tuple.Item1;
             this.operand2 = tuple.Item2;
         }
-
+        public int getRn() { return Rn; }   
+        public int getOperand2() { return operand2; }   
         private Tuple<string, int> getAddresingType(string operand2)
         {
             if (operand2[0] == '#') return Tuple.Create("im", Convert.ToInt32(operand2.Substring(1)));
