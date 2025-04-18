@@ -150,7 +150,7 @@ namespace ARMAssember2
             for (int i = 0; i < operand2.Length; i++)
             {
                 if (operand2[i] == '1' && Rn[i] != '1') res += '1';
-                if (operand2[i] != '1' && Rn[i] == '1') res += '1';
+                else if (operand2[i] != '1' && Rn[i] == '1') res += '1';
                 else res += '0';
             }
             int result = bin.BinaryToDecimal(res);

@@ -22,4 +22,20 @@ namespace ARMAssember2
         {
         }
     }
+    public class InstParsingException : Exception
+    {
+        public InstParsingException()
+        {
+        }
+
+        public InstParsingException(string message)
+            : base(message)
+        {
+        }
+
+        public InstParsingException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
+    }
 }

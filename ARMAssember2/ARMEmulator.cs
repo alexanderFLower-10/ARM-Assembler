@@ -18,9 +18,14 @@ namespace ARMAssember2
         private int[] Memory;
         Dictionary<string, int> labelsLocations;
         string SR;
+        private ConsoleDrawing DrawInstructions;
+        private ConsoleDrawing DrawRegisters;
+        private ConsoleDrawing DrawMemory;
+        private string[] rawInstructions;
 
-        public ARMEmulator(List<Instruction> instructions, int PC = 0, int RegistersCap = 16, int MemoryCap = 16)
+        public ARMEmulator(List<Instruction> instructions, string[] rawInstructions, int PC = 0, int RegistersCap = 16, int MemoryCap = 16)
         {
+            this.rawInstructions = rawInstructions;
             Registers = new int[RegistersCap];
             Memory = new int[MemoryCap];
             this.PC = PC;
@@ -37,16 +42,44 @@ namespace ARMAssember2
                         labelsLocations.Add(labelname, i);
                     }
                     else throw new Exception("Label name in use");
-                    return;
                 }
             }
+            if(rawInstructions != null)
+            {
+                DrawInstructions = new ConsoleDrawing(rawInstructions, 0, 0, "Assembly Program:", ConsoleColor.Blue);
+            }
+
         }
 
+        public void displayGUI()
+        {    
+            //first draw the program and register boxes
+            DrawInstructions.Draw();
+            string[] regs = new string[Registers.Length];
+            for(int i = 0; i <  Registers.Length; i++)
+            {
+                if(i >= 10) regs[i] = $"R{i}: {Registers[i]}";
+                else regs[i] = $"R{i}:  {Registers[i]}";
+            }
+            DrawRegisters = new ConsoleDrawing(regs, Console.WindowWidth - (Console.WindowWidth /3 ), 0, "Registers:", ConsoleColor.Magenta);
+            DrawRegisters.Draw();
+            string[] mems = new string[Memory.Length];
+            for (int i = 0; i < Memory.Length; i++)
+            {
+                if (i >= 10) mems[i] = $"{i}: {Memory[i]}";
+                else mems[i] = $"{i}:  {Memory[i]}";
+            }
+
+            DrawMemory = new ConsoleDrawing(mems, Console.WindowWidth - (Console.WindowWidth / 5), 0, "Memory Locations:",  ConsoleColor.Cyan);
+            DrawMemory.Draw();
+
+            //Then must box the menu and add an errors box
+        }
         public void Step()
         {
             if (instructions[PC].GetType() == typeof(HALT))
             {
-
+                HALT();
             }
             else if (instructions[PC].GetType() == typeof(Label))
             {
@@ -146,7 +179,7 @@ namespace ARMAssember2
                 BranchesInst Current = (BranchesInst)instructions[PC];
                 string label = Current.getLabel();
                 string condition = Current.getCondition();
-                if(condition == "R")
+                if (condition == "R")
                 {
                     if (labelsLocations.ContainsKey(label))
                     {
@@ -155,9 +188,9 @@ namespace ARMAssember2
                     else throw new Exception("Label doesn't exist");
 
                 }
-                else if(condition == "EQ")
+                else if (condition == "EQ")
                 {
-                    if(SR == "EQ")
+                    if (SR == "EQ")
                     {
                         if (labelsLocations.ContainsKey(label))
                         {
@@ -188,7 +221,19 @@ namespace ARMAssember2
                         else throw new Exception("Label doesn't exist");
                     }
                 }
+                else if (condition == "NE")
+                {
+                    if (SR != "EQ")
+                    {
+                        if (labelsLocations.ContainsKey(label))
+                        {
+                            PC = labelsLocations[label];
+                        }
+                        else throw new Exception("Label doesn't exist");
+                    }
+                }
             }
+            PC++;
         }
 
         public void HALT()

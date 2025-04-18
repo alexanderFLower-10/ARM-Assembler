@@ -47,6 +47,7 @@
     <Compile Include="Branches.cs" />
     <Compile Include="BaseClass + Binary.cs" />
     <Compile Include="BranchExecutions.cs" />
+    <Compile Include="ConsoleDrawing.cs" />
     <Compile Include="CustomExceptions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

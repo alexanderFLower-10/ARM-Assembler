@@ -26,13 +26,5 @@ namespace ARMAssember2
             }
         }
     }
-    public abstract class BranchExec
-    {
-        public abstract void Execute();
-    }
-
-    public abstract class BEQ : BranchExec
-    {
-
-    }
+ 
 }
