@@ -46,6 +46,70 @@ namespace ARMAssember2
             ystart = cursory;   
             this.titleColor = titleColour;
         }
+        public void DrawAndHighlightLineNumber(int PC)
+        {
+            string[] result = new string[height + 2];
+            result[0] = "╔";
+            string temp = "";
+            for (int i = 0; i < length; i++)
+            {
+                result[0] += "═";
+            }
+            result[0] += "╗";
+            for (int i = 1; i < height + 1; i++)
+            {
+                temp = " ";
+                result[i] += "║";
+                temp += text[i - 1];
+                for (int j = temp.Length; j < length; j++)
+                {
+                    temp += " ";
+                }
+                result[i] += temp;
+                result[i] += "║";
+            }
+            result[result.Length - 1] += "╚";
+            for (int i = 0; i < length; i++)
+            {
+                result[result.Length - 1] += "═";
+            }
+            result[result.Length - 1] += "╝";
+            Console.SetCursorPosition(xstart, ystart);
+            Console.Write(result[0]);
+
+            Console.SetCursorPosition(xstart, ystart + 1);
+            Console.Write(result[1][0]);
+            Console.ForegroundColor = titleColor;
+            for (int j = 1; j < result[1].Length - 1; j++)
+            {
+                Console.Write(result[1][j]);
+            }
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write(result[1][result[1].Length - 1]);
+            for (int i = 2; i < result.Length; i++)
+            {
+                Console.SetCursorPosition(xstart, ystart + i);
+                if (i-2 == PC)
+                {
+
+                    Console.Write(result[i][0]);
+                    Console.ForegroundColor = titleColor;
+                    for (int j = 1; j < result[i].Length - 1; j++)
+                    {
+                        Console.Write(result[i][j]);
+                    }
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.Write(result[i][result[i].Length - 1]);
+                }
+                else
+                {
+                    Console.Write(result[i]);
+                }
+            }
+
+
+
+        }
 
         public void Draw()
         {
@@ -96,7 +160,77 @@ namespace ARMAssember2
 
 
         }
-        
+        public void DrawCentrally()
+        {
+            string[] result = new string[height + 2];
+            result[0] = "╔";
+            string temp = "";
+            for (int i = 0; i < length; i++)
+            {
+                result[0] += "═";
+            }
+            result[0] += "╗";
+            for (int i = 1; i < height + 1; i++)
+            {
+                temp = " ";
+                result[i] += "║";
+
+                if(i-1 == 0)
+                {
+                    temp += text[i - 1];
+                    for (int j = temp.Length; j < length; j++)
+                    {
+                        temp += " ";
+                    }
+                    result[i] += temp;
+                    result[i] += "║";
+                }
+                else
+                {
+                    temp = "";
+                    int tempLength = text[i - 1].Length;
+                    double div2 = (length - tempLength) / 2;
+
+                    for (int j = 0; j < Math.Floor(div2); j++)
+                    {
+                        temp += " ";
+                    }
+                    result[i] += temp;
+                    temp = "";
+                    result[i] += text[i - 1];
+                    for (int j = result[i].Length; j < length +1; j++)
+                    {
+                        temp += " ";
+                    }
+                    result[i] += temp;
+                    result[i] += "║";
+                }
+
+            }
+            result[result.Length - 1] += "╚";
+            for (int i = 0; i < length; i++)
+            {
+                result[result.Length - 1] += "═";
+            }
+            result[result.Length - 1] += "╝";
+            Console.SetCursorPosition(xstart, ystart);
+            Console.Write(result[0]);
+
+            Console.SetCursorPosition(xstart, ystart + 1);
+            Console.Write(result[1][0]);
+            Console.ForegroundColor = titleColor;
+            for (int j = 1; j < result[1].Length - 1; j++)
+            {
+                Console.Write(result[1][j]);
+            }
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write(result[1][result[1].Length - 1]);
+            for (int i = 2; i < result.Length; i++)
+            {
+                Console.SetCursorPosition(xstart, ystart + i);
+                Console.Write(result[i]);
+            }
+        }
         public void drawNoText()
         {
             string[] result = new string[height + 2];

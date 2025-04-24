@@ -31,6 +31,7 @@ namespace ARMAssember2
             this.PC = PC;
             this.instructions = instructions;
             labelsLocations = new Dictionary<string, int>();
+            SR = "N/A";
             for(int i = 0; i < instructions.Count; i++)
             {
                 if (instructions[i].GetType() == typeof(Label))
@@ -46,7 +47,7 @@ namespace ARMAssember2
             }
             if(rawInstructions != null)
             {
-                DrawInstructions = new ConsoleDrawing(rawInstructions, 63, 1, "ASSEMBLY PROGRAM:", ConsoleColor.Blue);
+                DrawInstructions = new ConsoleDrawing(rawInstructions, 35, 1, "ASSEMBLY PROGRAM:", ConsoleColor.Blue);
             }
 
         }
@@ -54,16 +55,151 @@ namespace ARMAssember2
         public void displayGUI(string errorOrMsg = "")
         {    
             //first draw the program and register boxes
-            DrawInstructions.Draw();
-            string[] regs = new string[Registers.Length];
-            for(int i = 0; i <  regs.Length; i++)
+            DrawInstructions.DrawAndHighlightLineNumber(PC);
+            drawRegisters();
+            drawMemoryAdds();
+            drawSR();
+            drawPC();
+            drawError();
+            drawCorners();
+            drawEscthing();
+            //Then must box the menu and add an errors box
+        }
+
+        private void drawSR()
+        {
+            string[] temp = new string[1];
+            temp[0] = SR;
+            ConsoleDrawing statusdraw = new ConsoleDrawing(temp , 2, 19, "SR:", ConsoleColor.Yellow);
+            statusdraw.DrawCentrally();
+        }
+        private void drawPC()
+        {
+            string[] temp = new string[1];
+            temp[0] = PC.ToString(); ;
+            ConsoleDrawing PCdraw = new ConsoleDrawing(temp, 8, 19, "PC: ", ConsoleColor.Yellow);
+            PCdraw.DrawCentrally();
+        }
+        public void drawError(string error = null)
+        {
+            if(error != null)
             {
-                if(i >= 10) regs[i] = $"R{i}: {Registers[i}}";
+                if(error.Length > 30)
+                {
+                    string[] arr = new string[(int)Math.Ceiling((double)error.Length / 30)];
+                    string[] temp = error.Split(' ');
+                    int current = 0;
+                    for(int i = 0; i < temp.Length; i++)
+                    {
+                        if (arr[current] != null)
+                        {
+                            if (temp[i].Length + arr[current].Length > 30)
+                            {
+                                current++;
+                            }
+                            arr[current] += " " + temp[i];
+                        }
+                        else arr[current] = temp[i];    
+
+                    }
+                }
+                drawCorners();
+                return;
+            }
+            string[] boxed = new string[5];
+            for(int i = 0; i < 5; i++)
+            {
+                string temp = "";
+                for(int j = 0; j < 30; j++)
+                {
+                    temp += " ";
+                }
+                boxed[i] = temp;
+            }
+            ConsoleDrawing Errors = new ConsoleDrawing(boxed, 2,22, "Exceptions: ", ConsoleColor.Red);
+            Errors.Draw();    
+        }
+
+        private void drawCorners()
+        {
+            Console.SetCursorPosition(2, 19);
+            Console.Write("╠");
+            Console.SetCursorPosition(8, 19);
+            Console.Write("╦");
+            Console.SetCursorPosition(8, 22);
+            Console.Write("╩");
+            Console.SetCursorPosition(15, 19);
+            Console.Write("╬");
+            Console.SetCursorPosition(15, 1);
+            Console.Write("╦");
+            Console.SetCursorPosition(2, 22);
+            Console.Write("╠");
+            Console.SetCursorPosition(15, 22);
+            Console.Write("╩");
+            Console.SetCursorPosition(35, 19);
+            Console.Write("╣");
+            Console.SetCursorPosition(35, 22);
+            Console.Write("╣");
+            Console.SetCursorPosition(35, 1);
+            Console.Write("╦");
+            if(rawInstructions.Length + 3 <= 28)
+            {
+                Console.SetCursorPosition(35, rawInstructions.Length + 3);
+                if (rawInstructions.Length + 3 == 19 || rawInstructions.Length + 3 == 22)
+                {
+                    Console.Write("╬");
+                }
+                else if (rawInstructions.Length + 3 == 28)
+                {
+                    Console.Write("╩");
+                }
+                else
+                {
+                    Console.Write("╠");
+                }
+            }
+            else
+            {
+                Console.SetCursorPosition(35, 29);
+                Console.Write("╣");
+                
+                   
+                
+            }
+
+        }
+        private void drawEscthing()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+
+            Console.SetCursorPosition(16, 20);
+            Console.Write(" Press esc to exit");
+            Console.SetCursorPosition(16, 21);
+            Console.Write(" the assembler");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+
+            Console.SetCursorPosition(35, 20);
+            Console.Write("║");
+            Console.SetCursorPosition(35, 21);
+            Console.Write("║");
+
+
+        }
+        private void drawRegisters()
+        {
+            string[] regs = new string[Registers.Length];
+            for (int i = 0; i < regs.Length; i++)
+            {
+                if (i >= 10) regs[i] = $"R{i}: {Registers[i]}";
                 else regs[i] = $"R{i}:  {Registers[i]}";
-                i++;
             }
             DrawRegisters = new ConsoleDrawing(regs, 2, 1, "REGISTERS:", ConsoleColor.Magenta);
             DrawRegisters.Draw();
+        }
+
+        private void drawMemoryAdds()
+        {
             string[] mems = new string[Memory.Length];
             for (int i = 0; i < Memory.Length; i++)
             {
@@ -71,10 +207,9 @@ namespace ARMAssember2
                 else mems[i] = $"{i}:  {Memory[i]}";
             }
 
-            DrawMemory = new ConsoleDrawing(mems,20, 1, "MEMORY LOCATIONS:",  ConsoleColor.Cyan);
+            DrawMemory = new ConsoleDrawing(mems, 15, 1, "MEMORY LOCATIONS:", ConsoleColor.Cyan);
             DrawMemory.Draw();
 
-            //Then must box the menu and add an errors box
         }
         public void Step()
         {
@@ -239,10 +374,10 @@ namespace ARMAssember2
 
         public void HALT()
         {
-            throw new HALTException("HALT PROGRAM (PLS CATCH THIS)");
+            throw new HALTException("Program halted, please press any key to continue");
         }
         public string getSR() { return SR; }
-        public void setSR(string s) { SR = s; }
+        public void setSR(string s) { SR = s + " "; }
         public int GetRegisterVal(int index) { return Registers[index]; }   
         public int GetMemoryVal(int index) {return Memory[index]; }
 

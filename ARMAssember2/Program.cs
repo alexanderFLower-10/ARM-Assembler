@@ -15,6 +15,7 @@ namespace ARMAssember2
     internal class Program
     {
         // Parameters class holds instructions until the actual instruction class can be executed when passing through to ARM
+
         static void Main(string[] args)
         {
             Console.CursorVisible = false;
@@ -33,10 +34,10 @@ namespace ARMAssember2
                     ARM.displayGUI();
                     int xstart = (Console.WindowWidth - (Console.WindowWidth / 3) * 2);
                     int ystart = 5;
-                    ConsoleDrawing drawOptions = new ConsoleDrawing(new string[] { " Step for debugging", " Run whole program" }, xstart-2 , ystart-1, "Choose an option", ConsoleColor.Magenta);
+                    ConsoleDrawing drawOptions = new ConsoleDrawing(new string[] { " Step for debugging", " Run whole program" }, xstart - 2, ystart - 1, "Choose an option", ConsoleColor.Magenta);
                     drawOptions.drawNoText();
 
-                    int innerChoice = menuHandler("Choose an option:", new string[] { "Step for debugging", "Run whole program"} ,xstart, ystart );
+                    int innerChoice = menuHandler("Choose an option:", new string[] { "Step for debugging", "Run whole program" }, xstart, ystart);
                     if (innerChoice == 0)
                     {
                         while (true)
@@ -51,13 +52,14 @@ namespace ARMAssember2
                             catch (HALTException e)
                             {
                                 ARM.displayGUI();
+                                ARM.drawError(e.Message + ". Please press any key to exit");
                                 Console.ReadKey(true);
                                 break;
                             }
                         }
-                                        
+
                     }
-                    else if(innerChoice == 1)
+                    else if (innerChoice == 1)
                     {
                         while (true)
                         {
@@ -69,6 +71,7 @@ namespace ARMAssember2
                             catch (HALTException e)
                             {
                                 ARM.displayGUI();
+                                ARM.drawError(e.Message + ". Please press any key to exit");
                                 Console.ReadKey(true);
                                 break;
                             }
