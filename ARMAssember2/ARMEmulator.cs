@@ -46,22 +46,23 @@ namespace ARMAssember2
             }
             if(rawInstructions != null)
             {
-                DrawInstructions = new ConsoleDrawing(rawInstructions, 0, 0, "Assembly Program:", ConsoleColor.Blue);
+                DrawInstructions = new ConsoleDrawing(rawInstructions, 63, 1, "ASSEMBLY PROGRAM:", ConsoleColor.Blue);
             }
 
         }
 
-        public void displayGUI()
+        public void displayGUI(string errorOrMsg = "")
         {    
             //first draw the program and register boxes
             DrawInstructions.Draw();
             string[] regs = new string[Registers.Length];
-            for(int i = 0; i <  Registers.Length; i++)
+            for(int i = 0; i <  regs.Length; i++)
             {
-                if(i >= 10) regs[i] = $"R{i}: {Registers[i]}";
+                if(i >= 10) regs[i] = $"R{i}: {Registers[i}}";
                 else regs[i] = $"R{i}:  {Registers[i]}";
+                i++;
             }
-            DrawRegisters = new ConsoleDrawing(regs, Console.WindowWidth - (Console.WindowWidth /3 ), 0, "Registers:", ConsoleColor.Magenta);
+            DrawRegisters = new ConsoleDrawing(regs, 2, 1, "REGISTERS:", ConsoleColor.Magenta);
             DrawRegisters.Draw();
             string[] mems = new string[Memory.Length];
             for (int i = 0; i < Memory.Length; i++)
@@ -70,7 +71,7 @@ namespace ARMAssember2
                 else mems[i] = $"{i}:  {Memory[i]}";
             }
 
-            DrawMemory = new ConsoleDrawing(mems, Console.WindowWidth - (Console.WindowWidth / 5), 0, "Memory Locations:",  ConsoleColor.Cyan);
+            DrawMemory = new ConsoleDrawing(mems,20, 1, "MEMORY LOCATIONS:",  ConsoleColor.Cyan);
             DrawMemory.Draw();
 
             //Then must box the menu and add an errors box

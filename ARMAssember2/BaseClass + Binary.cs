@@ -19,6 +19,7 @@ namespace ARMAssember2
     public class BinaryStuff
     {
         public BinaryStuff() { }
+        // top band recursion
         public string DecimalToBinary(int dec)
         {
             if (dec > 1) return DecimalToBinary(dec / 2) + (dec % 2);

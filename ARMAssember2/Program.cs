@@ -20,6 +20,7 @@ namespace ARMAssember2
             Console.CursorVisible = false;
             while (true)
             {
+                Console.Clear();
                 int choice = menuHandler("Choose an option:", new string[] { "View challenges", "Load a program", "Attempt a challenge" });
                 if (choice == 0)
                 {
@@ -36,31 +37,47 @@ namespace ARMAssember2
                     drawOptions.drawNoText();
 
                     int innerChoice = menuHandler("Choose an option:", new string[] { "Step for debugging", "Run whole program"} ,xstart, ystart );
-                    if(innerChoice == 0)
+                    if (innerChoice == 0)
                     {
+                        while (true)
+                        {
+                            Console.ReadKey();
+                            try
+                            {
+                                ARM.Step();
+                                ARM.displayGUI();
 
+                            }
+                            catch (HALTException e)
+                            {
+                                ARM.displayGUI();
+                                Console.ReadKey(true);
+                                break;
+                            }
+                        }
+                                        
                     }
-                    if(innerChoice == 1)
+                    else if(innerChoice == 1)
                     {
                         while (true)
                         {
                             try
                             {
                                 ARM.Step();
-
+                                ARM.displayGUI();
                             }
-                            catch(HALTException e)
+                            catch (HALTException e)
                             {
-
+                                ARM.displayGUI();
+                                Console.ReadKey(true);
+                                break;
                             }
                         }
-                        
                     }
                 }
             }
         }
 
-        static void ExceptionBoxWrite()
         static void displayEverything(ARMEmulator ARM)
         {
             Console.Clear();
