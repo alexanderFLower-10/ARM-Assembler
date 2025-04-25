@@ -25,6 +25,7 @@ namespace ARMAssember2
         private int keyBindsXIndex;
         private string[] keybinds;
         int maxLines;
+        private int largestStorage;
         public ARMEmulator(List<Instruction> instructions, string[] rawInstructions, int PC = 0, int RegistersCap = 16, int MemoryCap = 16)
         {
             this.rawInstructions = rawInstructions;
@@ -55,10 +56,12 @@ namespace ARMAssember2
                 {
                     if (rawInstructions[i].Length > max) max = rawInstructions[i].Length;
                 }
-                keyBindsXIndex = max + 44;
+                keyBindsXIndex = max + 41;
                 keybinds = buildsKeyBinds();
                 maxLines = rawInstructions.Length - 1;
             }
+            if(Memory.Length > Registers.Length) largestStorage = Memory.Length;
+            else largestStorage = Registers.Length;
         }
 
         public int getMaxLines() { return maxLines; }
@@ -107,14 +110,14 @@ namespace ARMAssember2
         {
             string[] temp = new string[1];
             temp[0] = SR;
-            ConsoleDrawing statusdraw = new ConsoleDrawing(temp , 2, 19, "SR:", ConsoleColor.Yellow);
+            ConsoleDrawing statusdraw = new ConsoleDrawing(temp , 2, largestStorage+3, "SR:", ConsoleColor.Yellow);
             statusdraw.DrawCentrally();
         }
         private void drawPC()
         {
             string[] temp = new string[1];
             temp[0] = PC.ToString(); ;
-            ConsoleDrawing PCdraw = new ConsoleDrawing(temp, 8, 19, "PC: ", ConsoleColor.Yellow);
+            ConsoleDrawing PCdraw = new ConsoleDrawing(temp, 8, largestStorage+3, "PC: ", ConsoleColor.Yellow);
             PCdraw.DrawCentrally();
         }
         public void drawError(string error = null)
@@ -153,38 +156,39 @@ namespace ARMAssember2
                 }
                 boxed[i] = temp;
             }
-            ConsoleDrawing Errors = new ConsoleDrawing(boxed, 2,22, "Exceptions: ", ConsoleColor.Red);
+            ConsoleDrawing Errors = new ConsoleDrawing(boxed, 2,largestStorage+6, "Exceptions: ", ConsoleColor.Red);
             Errors.Draw();    
         }
         public int getInputXIndex() { return keyBindsXIndex; }
 
         private void drawCorners()
         {
-            Console.SetCursorPosition(2, 19);
+            Console.SetCursorPosition(2, 19 + (largestStorage-16));
             Console.Write("╠");
-            Console.SetCursorPosition(8, 19);
+            Console.SetCursorPosition(8, 19 + (largestStorage - 16));
             Console.Write("╦");
-            Console.SetCursorPosition(8, 22);
+            Console.SetCursorPosition(8, 22 + (largestStorage - 16));
             Console.Write("╩");
-            Console.SetCursorPosition(15, 19);
+            Console.SetCursorPosition(15, 19 + (largestStorage - 16));
             Console.Write("╬");
             Console.SetCursorPosition(15, 1);
             Console.Write("╦");
-            Console.SetCursorPosition(2, 22);
+            Console.SetCursorPosition(2, 22 + (largestStorage - 16));
             Console.Write("╠");
-            Console.SetCursorPosition(15, 22);
+            Console.SetCursorPosition(15, 22 + (largestStorage - 16));
             Console.Write("╩");
-            Console.SetCursorPosition(35, 19);
+            Console.SetCursorPosition(35, 19 + (largestStorage - 16));
             Console.Write("╣");
-            Console.SetCursorPosition(35, 22);
+            Console.SetCursorPosition(35, 22 + (largestStorage - 16));
             Console.Write("╣");
             Console.SetCursorPosition(35, 1);
             Console.Write("╦");
             Console.SetCursorPosition(keyBindsXIndex, 9);
             Console.Write("╠");
+            Console.SetCursorPosition(keyBindsXIndex, rawInstructions.Length + 3);
+            Console.Write("╣");
             Console.SetCursorPosition(keyBindsXIndex+38, 9);
             Console.Write("╣");
-
             if (rawInstructions.Length + 3 <= 28)
             {
                 Console.SetCursorPosition(35, rawInstructions.Length + 3);
@@ -217,16 +221,16 @@ namespace ARMAssember2
         {
             Console.ForegroundColor = ConsoleColor.DarkCyan;
 
-            Console.SetCursorPosition(16, 20);
+            Console.SetCursorPosition(16, largestStorage + 4);
             Console.Write(" Press esc to exit");
-            Console.SetCursorPosition(16, 21);
+            Console.SetCursorPosition(16, largestStorage + 5);
             Console.Write(" the assembler");
             Console.ForegroundColor = ConsoleColor.Gray;
 
 
-            Console.SetCursorPosition(35, 20);
+            Console.SetCursorPosition(35, largestStorage + 4);
             Console.Write("║");
-            Console.SetCursorPosition(35, 21);
+            Console.SetCursorPosition(35, largestStorage + 5);
             Console.Write("║");
 
 

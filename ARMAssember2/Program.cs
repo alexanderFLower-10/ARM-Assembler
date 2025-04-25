@@ -23,6 +23,7 @@ namespace ARMAssember2
             {
                 Console.Clear();
                 int choice = menuHandler("Choose an option:", new string[] { "View challenges", "Load a program", "Attempt a challenge" });
+               
                 if (choice == 0)
                 {
     
@@ -45,60 +46,53 @@ namespace ARMAssember2
             while (true)
             {
                 ConsoleKey key = Console.ReadKey(true).Key;
-                if(key == ConsoleKey.Spacebar)
+                try
                 {
-                    try
+                    if (key == ConsoleKey.Spacebar)
                     {
+
                         ARM.Step();
                         displayEverything(ARM);
 
                     }
-                    catch (HALTException e)
+                    else if (key == ConsoleKey.Enter)
                     {
-                        displayEverything(ARM);
-                        ARM.drawError(e.Message + ". Please press any key to exit");
-                        Console.ReadKey(true);
-                        break;
-                    }
-                }
-                else if(key == ConsoleKey.Enter)
-                {
-                    while (true)
-                    {
-                        try
+                        while (true)
                         {
+
                             ARM.Step();
                             displayEverything(ARM);
 
                         }
-                        catch (HALTException e)
+                    }
+                    else if (key == ConsoleKey.Escape)
+                    {
+                        break;
+                    }
+                    else if (key == ConsoleKey.J)
+                    {
+                        int ln = getSafeIntInputBox(inputXPos + 2, ARM, ARM.getMaxLines());
+                        ARM.SetPC(ln);
+                        displayEverything(ARM);
+                    }
+                    else if (key == ConsoleKey.Q)
+                    {
+                        int ln = getSafeIntInputBox(inputXPos + 2, ARM, ARM.getMaxLines());
+                        while (ARM.GetPC() != ln)
                         {
-                            displayEverything(ARM);
-                            ARM.drawError(e.Message + ". Please press any key to exit");
-                            Console.ReadKey(true);
-                            break;
+                            ARM.Step();
                         }
+                        displayEverything(ARM);
                     }
                 }
-                else if(key == ConsoleKey.Escape)
+                catch (Exception e)
                 {
+                    displayEverything(ARM);
+                    ARM.drawError(e.Message + ". Please press any key to exit");
+                    Console.ReadKey(true);
                     break;
                 }
-                else if(key == ConsoleKey.J)
-                {
-                    int ln = getSafeIntInputBox(inputXPos+2, ARM, ARM.getMaxLines());
-                    ARM.SetPC(ln);
-                    displayEverything(ARM);
-                }
-                else if (key == ConsoleKey.Q)
-                {
-                    int ln = getSafeIntInputBox(inputXPos+2, ARM, ARM.getMaxLines());
-                    while(ARM.GetPC() != ln)
-                    {
-                        ARM.Step();
-                    }
-                    displayEverything(ARM);
-                }
+                
 
             }
         }
