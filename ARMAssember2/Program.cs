@@ -25,71 +25,113 @@ namespace ARMAssember2
                 int choice = menuHandler("Choose an option:", new string[] { "View challenges", "Load a program", "Attempt a challenge" });
                 if (choice == 0)
                 {
-
-
+    
                 }
                 if (choice == 1)
                 {
-                    ARMEmulator ARM = LoadProgram();
-                    ARM.displayGUI();
-                    int xstart = (Console.WindowWidth - (Console.WindowWidth / 3) * 2);
-                    int ystart = 5;
-                    ConsoleDrawing drawOptions = new ConsoleDrawing(new string[] { " Step for debugging", " Run whole program" }, xstart - 2, ystart - 1, "Choose an option", ConsoleColor.Magenta);
-                    drawOptions.drawNoText();
-
-                    int innerChoice = menuHandler("Choose an option:", new string[] { "Step for debugging", "Run whole program" }, xstart, ystart);
-                    if (innerChoice == 0)
-                    {
-                        while (true)
-                        {
-                            Console.ReadKey();
-                            try
-                            {
-                                ARM.Step();
-                                ARM.displayGUI();
-
-                            }
-                            catch (HALTException e)
-                            {
-                                ARM.displayGUI();
-                                ARM.drawError(e.Message + ". Please press any key to exit");
-                                Console.ReadKey(true);
-                                break;
-                            }
-                        }
-
-                    }
-                    else if (innerChoice == 1)
-                    {
-                        while (true)
-                        {
-                            try
-                            {
-                                ARM.Step();
-                                ARM.displayGUI();
-                            }
-                            catch (HALTException e)
-                            {
-                                ARM.displayGUI();
-                                ARM.drawError(e.Message + ". Please press any key to exit");
-                                Console.ReadKey(true);
-                                break;
-                            }
-                        }
-                    }
+                    loadIndividualProgram();
                 }
             }
         }
 
+        static void loadIndividualProgram()
+        {
+            ARMEmulator ARM = LoadProgram();
+            ARM.displayGUI();
+            int xstart = (Console.WindowWidth - (Console.WindowWidth / 3) * 2);
+            int ystart = 5;
+            displayEverything(ARM);
+            int inputXPos = ARM.getInputXIndex();
+            while (true)
+            {
+                ConsoleKey key = Console.ReadKey(true).Key;
+                if(key == ConsoleKey.Spacebar)
+                {
+                    try
+                    {
+                        ARM.Step();
+                        displayEverything(ARM);
+
+                    }
+                    catch (HALTException e)
+                    {
+                        displayEverything(ARM);
+                        ARM.drawError(e.Message + ". Please press any key to exit");
+                        Console.ReadKey(true);
+                        break;
+                    }
+                }
+                else if(key == ConsoleKey.Enter)
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            ARM.Step();
+                            displayEverything(ARM);
+
+                        }
+                        catch (HALTException e)
+                        {
+                            displayEverything(ARM);
+                            ARM.drawError(e.Message + ". Please press any key to exit");
+                            Console.ReadKey(true);
+                            break;
+                        }
+                    }
+                }
+                else if(key == ConsoleKey.Escape)
+                {
+                    break;
+                }
+                else if(key == ConsoleKey.J)
+                {
+                    int ln = getSafeIntInputBox(inputXPos+2, ARM, ARM.getMaxLines());
+                    ARM.SetPC(ln);
+                    displayEverything(ARM);
+                }
+                else if (key == ConsoleKey.Q)
+                {
+                    int ln = getSafeIntInputBox(inputXPos+2, ARM, ARM.getMaxLines());
+                    while(ARM.GetPC() != ln)
+                    {
+                        ARM.Step();
+                    }
+                    displayEverything(ARM);
+                }
+
+            }
+        }
+
+        static int getSafeIntInputBox(int xpo, ARMEmulator ARM, int upperlim)
+        {
+            int a = -1;
+            while (true)
+            {
+                ARM.drawBlankInputBox();
+                Console.SetCursorPosition(xpo, 11);
+                Console.Write("Enter line numnber:   ");
+                Console.CursorVisible = true;
+                try
+                {
+                    
+                    a = Convert.ToInt32(Console.ReadLine());
+                    if (a < 0 || a > upperlim) throw new ArgumentException();
+                    Console.CursorVisible = false;
+                    return a;
+                }
+                catch(Exception e )
+                {
+                    ARM.drawBlankInputBox();
+                    Console.SetCursorPosition(xpo, 11);
+                    Console.Write("Invalid input, press any key to continue");
+                }
+            }
+        }
         static void displayEverything(ARMEmulator ARM)
         {
             Console.Clear();
             ARM.displayGUI();
-        }
-
-        static void executeIndividualProgram(ARMEmulator ARM)
-        {
-            
         }
         static ARMEmulator LoadProgram()
         {

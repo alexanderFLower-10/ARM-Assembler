@@ -22,7 +22,9 @@ namespace ARMAssember2
         private ConsoleDrawing DrawRegisters;
         private ConsoleDrawing DrawMemory;
         private string[] rawInstructions;
-
+        private int keyBindsXIndex;
+        private string[] keybinds;
+        int maxLines;
         public ARMEmulator(List<Instruction> instructions, string[] rawInstructions, int PC = 0, int RegistersCap = 16, int MemoryCap = 16)
         {
             this.rawInstructions = rawInstructions;
@@ -48,22 +50,57 @@ namespace ARMAssember2
             if(rawInstructions != null)
             {
                 DrawInstructions = new ConsoleDrawing(rawInstructions, 35, 1, "ASSEMBLY PROGRAM:", ConsoleColor.Blue);
+                int max = 0;
+                for (int i = 0; i < rawInstructions.Length; i++)
+                {
+                    if (rawInstructions[i].Length > max) max = rawInstructions[i].Length;
+                }
+                keyBindsXIndex = max + 44;
+                keybinds = buildsKeyBinds();
+                maxLines = rawInstructions.Length - 1;
             }
-
         }
 
+        public int getMaxLines() { return maxLines; }
+
+        private string[] buildsKeyBinds()
+        {
+            string[] keybinds = new string[6];
+            keybinds[0] = "SpaceBar - Step 1 Instructions";
+            keybinds[1] = "Enter - Run Whole Program";
+            keybinds[2] = "M - Manually edit memory location";
+            keybinds[3] = "R - Manually edit register location";
+            keybinds[4] = "J - Jump to line number";
+            keybinds[5] = "Q - Run program to line number";
+            return keybinds;
+
+
+        }
+        public void drawBlankInputBox()
+        {
+            string[] str = new string[1];
+            str[0] = "                                   "; 
+            ConsoleDrawing inpdraw = new ConsoleDrawing(str , keyBindsXIndex, 9, "INPUT:", ConsoleColor.Green);
+            inpdraw.Draw();
+        }
         public void displayGUI(string errorOrMsg = "")
         {    
-            //first draw the program and register boxes
             DrawInstructions.DrawAndHighlightLineNumber(PC);
             drawRegisters();
             drawMemoryAdds();
             drawSR();
             drawPC();
             drawError();
-            drawCorners();
             drawEscthing();
-            //Then must box the menu and add an errors box
+            drawKeybinds();
+            drawBlankInputBox();
+
+            drawCorners();
+        }
+        private void drawKeybinds()
+        {
+            ConsoleDrawing kbdraw = new ConsoleDrawing(keybinds, keyBindsXIndex, 1, "KEYBINDS:", ConsoleColor.Yellow);
+            kbdraw.Draw();
         }
 
         private void drawSR()
@@ -119,6 +156,7 @@ namespace ARMAssember2
             ConsoleDrawing Errors = new ConsoleDrawing(boxed, 2,22, "Exceptions: ", ConsoleColor.Red);
             Errors.Draw();    
         }
+        public int getInputXIndex() { return keyBindsXIndex; }
 
         private void drawCorners()
         {
@@ -142,7 +180,12 @@ namespace ARMAssember2
             Console.Write("╣");
             Console.SetCursorPosition(35, 1);
             Console.Write("╦");
-            if(rawInstructions.Length + 3 <= 28)
+            Console.SetCursorPosition(keyBindsXIndex, 9);
+            Console.Write("╠");
+            Console.SetCursorPosition(keyBindsXIndex+38, 9);
+            Console.Write("╣");
+
+            if (rawInstructions.Length + 3 <= 28)
             {
                 Console.SetCursorPosition(35, rawInstructions.Length + 3);
                 if (rawInstructions.Length + 3 == 19 || rawInstructions.Length + 3 == 22)
@@ -166,6 +209,8 @@ namespace ARMAssember2
                    
                 
             }
+            Console.SetCursorPosition(keyBindsXIndex, 1);
+            Console.Write("╦");
 
         }
         private void drawEscthing()
