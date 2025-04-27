@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,15 +15,25 @@ namespace ARMAssember2
         private string originalOperand2;
         private int operand2;
         private string addresingType;
+        private string fullinst;
+        private int linenum;
 
         public ThreeParameterInst(string inst, int Rd, int Rn, string operand2, int linenumber, string fullinst)
         {
+            this.linenum = linenumber;
+            this.fullinst = fullinst;
+            originalOperand2 = operand2;
             this.inst = inst;
             this.Rd = Rd;
             this.Rn = Rn;
             var tuple = ComputeAddresingType(operand2, linenumber, fullinst);
             addresingType = tuple.Item1;
             this.operand2 = tuple.Item2;
+        }
+
+        public ThreeParameterInst Clone()
+        {
+            return new ThreeParameterInst(inst, Rd, Rn, originalOperand2, linenum, fullinst);
         }
         public int getRd() { return Rd; }
         public int getRn() { return Rn; }

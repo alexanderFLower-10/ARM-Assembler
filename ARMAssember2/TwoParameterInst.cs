@@ -11,17 +11,19 @@ namespace ARMAssember2
         private string inst;
         private int Rd;
         private int operand2;
-        private string originalOperand2;
         private string addresingType;
-        private int linenum;
+        private string originalOperand2;
         private string fullinst;
+        private int linenum;
+
 
         public TwoParameterInst(string inst, int Rd, string operand2, int linenumber, string fullinst)
         {
+            this.fullinst = fullinst;
+            this.originalOperand2 = operand2;
+            this.linenum = linenumber;
             this.inst = inst;
             this.Rd = Rd;
-            this.linenum = linenumber;
-            this.fullinst = fullinst;
             var tuple = ComputeAddresingType(operand2,linenumber, fullinst);
             addresingType = tuple.Item1;
 
@@ -38,6 +40,7 @@ namespace ARMAssember2
         {
             return new TwoParameterInst(inst, Rd, originalOperand2, linenum, fullinst);
         }
+
         public int getRd() { return Rd; }
         public string GetInstType() { return inst; }
         public void setOperand2(int value) { operand2 = value; }

@@ -534,17 +534,14 @@ namespace ARMAssember2
             return new ARMEmulator(instList, rawInstructions);
         }
 
-        static void attemptE1(ARMEmulator tempUserProg)
+        static void attemptE1(ARMEmulator userProgram)
         {
-            ARMEmulator tempsol = getSolution(1, "E");
+            ARMEmulator solution = getSolution(1, "E");
             Random rn = new Random();
-            ARMEmulator solution, userProgram;
             int testCaseMVal1, testCaseMVal2;
             for (int i = 0; i < 100; i++)
             {
-                solution = tempsol;
                 solution.Reset();
-                userProgram = tempUserProg;
                 userProgram.Reset();
                 testCaseMVal1 = rn.Next(1, 100);
                 testCaseMVal2 = rn.Next(1, 100);

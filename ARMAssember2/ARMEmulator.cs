@@ -26,7 +26,6 @@ namespace ARMAssember2
         private string[] keybinds;
         int maxLines;
         private int largestStorage;
-        List<Instruction> untouchedInstList;
         public ARMEmulator(List<Instruction> instructions, string[] rawInstructions, int PC = 0, int RegistersCap = 16, int MemoryCap = 16)
         {
             this.instructions = instructions;
@@ -35,8 +34,6 @@ namespace ARMAssember2
             {
                 tempInstList.Add (instructions[i]);
             }
-            untouchedInstList = tempInstList;
-
             this.rawInstructions = rawInstructions;
             Registers = new int[RegistersCap];
             Memory = new int[MemoryCap];
@@ -81,7 +78,6 @@ namespace ARMAssember2
             }
             PC = 0;
             SR = "N/A";
-            instructions = untouchedInstList;
         }
 
         public int getMaxLines() { return maxLines; }
@@ -319,7 +315,8 @@ namespace ARMAssember2
                     {"LSL", typeof(LSL) },
                     {"LSR", typeof(LSR) }
                 };
-                ThreeParameterInst Current = (ThreeParameterInst) instructions[PC];
+                ThreeParameterInst current = (ThreeParameterInst) instructions[PC];
+                ThreeParameterInst Current = current.Clone();
                 string addressingType = Current.getAddressingType();
                 int baseOperand = Current.getOperand2();
                 string instType = Current.GetInstType();
@@ -359,7 +356,8 @@ namespace ARMAssember2
                     {"MOV", typeof(MOV) },
                     {"MVN", typeof(MVN) },
                 };
-                TwoParameterInst Current = (TwoParameterInst)instructions[PC];
+                TwoParameterInst current = (TwoParameterInst)instructions[PC];
+                TwoParameterInst Current = current.Clone();
                 string addressingType = Current.getAddressingType();
                 int baseOperand = Current.getOperand2();
                 string instType = Current.GetInstType();
