@@ -68,22 +68,26 @@ namespace ARMAssember2
 
         private string[] buildsKeyBinds()
         {
-            string[] keybinds = new string[6];
+            string[] keybinds = new string[8];
             keybinds[0] = "SpaceBar - Step 1 Instructions";
             keybinds[1] = "Enter - Run Whole Program";
             keybinds[2] = "M - Manually edit memory location";
             keybinds[3] = "R - Manually edit register location";
             keybinds[4] = "J - Jump to line number";
             keybinds[5] = "Q - Run program to line number";
+            keybinds[6] = "Backspace - Go back a line";
+            keybinds[7] = "Shift - Reset program";
             return keybinds;
 
 
         }
+        public int getMemorylength() { return Memory.Length; }  
+        public int getRegisterLength() { return Registers.Length; }
         public void drawBlankInputBox()
         {
             string[] str = new string[1];
             str[0] = "                                   "; 
-            ConsoleDrawing inpdraw = new ConsoleDrawing(str , keyBindsXIndex, 9, "INPUT:", ConsoleColor.Green);
+            ConsoleDrawing inpdraw = new ConsoleDrawing(str , keyBindsXIndex, 10, "INPUT:", ConsoleColor.Green);
             inpdraw.Draw();
         }
         public void displayGUI(string errorOrMsg = "")
@@ -122,11 +126,12 @@ namespace ARMAssember2
         }
         public void drawError(string error = null)
         {
-            if(error != null)
+            ConsoleDrawing Errors = new ConsoleDrawing(new string[] { " " }, 0,0);
+            if (error != null)
             {
                 if(error.Length > 30)
                 {
-                    string[] arr = new string[(int)Math.Ceiling((double)error.Length / 30)];
+                    string[] arr = new string[7];
                     string[] temp = error.Split(' ');
                     int current = 0;
                     for(int i = 0; i < temp.Length; i++)
@@ -136,28 +141,40 @@ namespace ARMAssember2
                             if (temp[i].Length + arr[current].Length > 30)
                             {
                                 current++;
+                                arr[current] = temp[i];
                             }
-                            arr[current] += " " + temp[i];
+                            else arr[current] += " " + temp[i]; 
                         }
                         else arr[current] = temp[i];    
 
                     }
+                    current++;
+                    if(current < 7)
+                    {
+                        for(int i = current; i < 7; i++)
+                        {
+                            arr[i] = " ";
+                        }
+                    }
+                    Errors = new ConsoleDrawing(arr, 2, largestStorage + 6, "ERRORS:                       ", ConsoleColor.Red);
                 }
-                drawCorners();
-                return;
             }
-            string[] boxed = new string[5];
-            for(int i = 0; i < 5; i++)
+            else
             {
-                string temp = "";
-                for(int j = 0; j < 30; j++)
+                string[] boxed = new string[7];
+                for (int i = 0; i < 7; i++)
                 {
-                    temp += " ";
+                    string temp = "";
+                    for (int j = 0; j < 30; j++)
+                    {
+                        temp += " ";
+                    }
+                    boxed[i] = temp;
                 }
-                boxed[i] = temp;
+                Errors = new ConsoleDrawing(boxed, 2, largestStorage + 6, "ERRORS:", ConsoleColor.Red);
             }
-            ConsoleDrawing Errors = new ConsoleDrawing(boxed, 2,largestStorage+6, "Exceptions: ", ConsoleColor.Red);
-            Errors.Draw();    
+            Errors.Draw();
+            drawCorners();
         }
         public int getInputXIndex() { return keyBindsXIndex; }
 
@@ -326,22 +343,31 @@ namespace ARMAssember2
                 string addressingType = Current.getAddressingType();
                 int baseOperand = Current.getOperand2();
                 string instType = Current.GetInstType();
-                if (addressingType == "im")
+                if (instType != "STR")
                 {
-                    // nothing to be done as operand 2 already set properly in constructor
+                    if (addressingType == "im")
+                    {
+                        // nothing to be done as operand 2 already set properly in constructor
+                    }
+                    else if (addressingType == "dr")
+                    {
+                        Current.setOperand2(Registers[Current.getOperand2()]);
+                    }
+                    else if (addressingType == "dm")
+                    {
+                        Current.setOperand2(Memory[Current.getOperand2()]);
+                    }
+                    else if (addressingType == "indr")
+                    {
+                        Current.setOperand2(Memory[Registers[Current.getOperand2()]]);
+                    }
+
                 }
-                else if (addressingType == "dr")
+                else
                 {
-                    Current.setOperand2(Registers[Current.getOperand2()]);
+                    
                 }
-                else if (addressingType == "dm")
-                {
-                    Current.setOperand2(Memory[Current.getOperand2()]);
-                }
-                else if (addressingType == "indr")
-                {
-                    Current.setOperand2(Memory[Registers[Current.getOperand2()]]);
-                }
+
 
                 if (TwoParInstMap.ContainsKey(instType))
                 {
@@ -423,7 +449,7 @@ namespace ARMAssember2
 
         public void HALT()
         {
-            throw new HALTException("Program halted, please press any key to continue");
+            throw new HALTException("Program halted.");
         }
         public string getSR() { return SR; }
         public void setSR(string s) { SR = s + " "; }

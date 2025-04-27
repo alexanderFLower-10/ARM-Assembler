@@ -15,8 +15,7 @@ namespace ARMAssember2
     {
         public override void Execute(ARMEmulator ARM, TwoParameterInst parameters)
         {
-            int memval = ARM.GetMemoryVal(parameters.getOperand2());
-            ARM.SetRegisterVal(parameters.getRd(), memval);
+            ARM.SetRegisterVal(parameters.getRd(), parameters.getOperand2());
 
         }
     }
@@ -24,8 +23,8 @@ namespace ARMAssember2
     {
         public override void Execute(ARMEmulator ARM, TwoParameterInst parameters)
         {
-            int rval = ARM.GetRegisterVal(parameters.getRd());
-            ARM.SetMemoryVal(parameters.getOperand2(), rval);
+            int Rd = ARM.GetRegisterVal(parameters.getRd());
+            ARM.SetMemoryVal(parameters.getOperand2(), Rd);
         }
     }
     public class MOV : TwoParameterExecutes
