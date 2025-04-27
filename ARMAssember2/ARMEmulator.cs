@@ -26,8 +26,17 @@ namespace ARMAssember2
         private string[] keybinds;
         int maxLines;
         private int largestStorage;
+        List<Instruction> untouchedInstList;
         public ARMEmulator(List<Instruction> instructions, string[] rawInstructions, int PC = 0, int RegistersCap = 16, int MemoryCap = 16)
         {
+            this.instructions = instructions;
+            List<Instruction> tempInstList = new List<Instruction> ();
+            for(int i = 0; i < instructions.Count; i++)
+            {
+                tempInstList.Add (instructions[i]);
+            }
+            untouchedInstList = tempInstList;
+
             this.rawInstructions = rawInstructions;
             Registers = new int[RegistersCap];
             Memory = new int[MemoryCap];
@@ -62,6 +71,17 @@ namespace ARMAssember2
             }
             if(Memory.Length > Registers.Length) largestStorage = Memory.Length;
             else largestStorage = Registers.Length;
+        }
+        public void Reset()
+        {
+            for(int i = 0; i < Registers.Length; i++)
+            {
+                Registers[i] = 0;
+                Memory[i] = 0;
+            }
+            PC = 0;
+            SR = "N/A";
+            instructions = untouchedInstList;
         }
 
         public int getMaxLines() { return maxLines; }
@@ -361,12 +381,10 @@ namespace ARMAssember2
                     {
                         Current.setOperand2(Memory[Registers[Current.getOperand2()]]);
                     }
+                }
+            
+            
 
-                }
-                else
-                {
-                    
-                }
 
 
                 if (TwoParInstMap.ContainsKey(instType))

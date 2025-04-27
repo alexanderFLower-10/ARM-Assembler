@@ -15,7 +15,7 @@ namespace ARMAssember2
     {
         public override void Execute(ARMEmulator ARM, TwoParameterInst parameters)
         {
-            ARM.SetRegisterVal(parameters.getRd(), parameters.getOperand2());
+            ARM.SetRegisterVal(parameters.getRd(),parameters.getOperand2());
 
         }
     }

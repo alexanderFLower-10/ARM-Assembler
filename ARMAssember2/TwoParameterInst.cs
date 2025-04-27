@@ -11,14 +11,20 @@ namespace ARMAssember2
         private string inst;
         private int Rd;
         private int operand2;
+        private string originalOperand2;
         private string addresingType;
+        private int linenum;
+        private string fullinst;
 
         public TwoParameterInst(string inst, int Rd, string operand2, int linenumber, string fullinst)
         {
             this.inst = inst;
             this.Rd = Rd;
+            this.linenum = linenumber;
+            this.fullinst = fullinst;
             var tuple = ComputeAddresingType(operand2,linenumber, fullinst);
             addresingType = tuple.Item1;
+
             if(inst == "STR" || inst == "LDR")
             {
                 if (addresingType != "dm") throw new ArgumentException(inst + " cant have a operand other than a memory loc");
@@ -26,6 +32,11 @@ namespace ARMAssember2
 
             this.operand2 = tuple.Item2;
 
+        }
+
+        public TwoParameterInst Clone()
+        {
+            return new TwoParameterInst(inst, Rd, originalOperand2, linenum, fullinst);
         }
         public int getRd() { return Rd; }
         public string GetInstType() { return inst; }

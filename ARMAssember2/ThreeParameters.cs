@@ -11,6 +11,7 @@ namespace ARMAssember2
         private string inst;
         private int Rd;
         private int Rn;
+        private string originalOperand2;
         private int operand2;
         private string addresingType;
 
