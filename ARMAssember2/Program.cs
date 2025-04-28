@@ -529,7 +529,7 @@ namespace ARMAssember2
 
         static ARMEmulator getSolution(int num, string diff)
         {
-            string[] rawInstructions = caeserDecrypt($@"C:\Users\alexa\Documents\GitHub\ARM-Assembler\ARMAssember2\bin\Debug\Soltuions\{diff}{num}.asm");
+            string[] rawInstructions = caeserDecrypt($@"Solutions\{diff}{num}.asm");
             List<Instruction> instList = getInstListSafe(rawInstructions);
             return new ARMEmulator(instList, rawInstructions);
         }
@@ -539,12 +539,12 @@ namespace ARMAssember2
             ARMEmulator solution = getSolution(1, "E");
             Random rn = new Random();
             int testCaseMVal1, testCaseMVal2;
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 solution.Reset();
                 userProgram.Reset();
-                testCaseMVal1 = rn.Next(1, 100);
-                testCaseMVal2 = rn.Next(1, 100);
+                testCaseMVal1 = rn.Next(1, 1000);
+                testCaseMVal2 = rn.Next(1, 1000);
                 userProgram.SetMemoryVal(1, testCaseMVal1);
                 userProgram.SetMemoryVal(2, testCaseMVal2);
                 solution.SetMemoryVal(1, testCaseMVal1);
@@ -589,7 +589,33 @@ namespace ARMAssember2
                 }
                 else
                 {
-                    Console.WriteLine($"Testcase {i + 1} PASSED: M1 = {testCaseMVal1} M2 = {testCaseMVal2} Expected M0 = {requiredresult} Your M0 = {userProgram.GetMemoryVal(0)}");
+                    string result = $"Testcase {i + 1}";
+                    for (int j = (i+1).ToString().Length; j < 5; j++)
+                    {
+                        result += " ";
+                    }
+                    result += $"PASSED: M1 = {testCaseMVal1}";
+                    for (int j = testCaseMVal1.ToString().Length; j < 5; j++)
+                    {
+                        result += " ";
+                    }
+                    result += $" M2 = {testCaseMVal2}";
+                    for (int j = testCaseMVal2.ToString().Length; j < 5; j++)
+                    {
+                        result += " ";
+                    }
+                    result += $" Expected M0 = {requiredresult}";
+                    for (int j = requiredresult.ToString().Length; j < 5; j++)
+                    {
+                        result += " ";
+                    }
+                    result += " Your M0 = ";
+                    result += userProgram.GetMemoryVal(0).ToString();
+                    for (int j = requiredresult.ToString().Length; j < 5; j++)
+                    {
+                        result += " ";
+                    }
+                    Console.WriteLine(result);
                 }
             }
             Console.WriteLine("Program is valid");
