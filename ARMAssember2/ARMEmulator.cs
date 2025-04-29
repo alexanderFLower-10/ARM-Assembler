@@ -26,34 +26,41 @@ namespace ARMAssember2
         private string[] keybinds;
         int maxLines;
         private int largestStorage;
-        public ARMEmulator(List<Instruction> instructions, string[] rawInstructions, int PC = 0, int RegistersCap = 16, int MemoryCap = 16)
+        private string filepath;
+        public ARMEmulator(List<Instruction> instructions, string[] rawInstructions, string filepath, int PC = 0, int RegistersCap = 16, int MemoryCap = 16 )
         {
-            this.instructions = instructions;
+            this.filepath = filepath;
             List<Instruction> tempInstList = new List<Instruction> ();
-            for(int i = 0; i < instructions.Count; i++)
+            if(instructions!= null)
+                
             {
-                tempInstList.Add (instructions[i]);
-            }
-            this.rawInstructions = rawInstructions;
-            Registers = new int[RegistersCap];
-            Memory = new int[MemoryCap];
-            this.PC = PC;
-            this.instructions = instructions;
-            labelsLocations = new Dictionary<string, int>();
-            SR = "N/A";
-            for(int i = 0; i < instructions.Count; i++)
-            {
-                if (instructions[i].GetType() == typeof(Label))
+                this.instructions = instructions;
+                for (int i = 0; i < instructions.Count; i++)
                 {
-                    Label temp = (Label)instructions[i];
-                    string labelname = temp.getLabel();
-                    if (!labelsLocations.ContainsKey(labelname))
+                    tempInstList.Add(instructions[i]);
+                }
+                Registers = new int[RegistersCap];
+                Memory = new int[MemoryCap];
+                this.PC = PC;
+                this.instructions = instructions;
+                labelsLocations = new Dictionary<string, int>();
+                SR = "N/A";
+                for (int i = 0; i < instructions.Count; i++)
+                {
+                    if (instructions[i].GetType() == typeof(Label))
                     {
-                        labelsLocations.Add(labelname, i);
+                        Label temp = (Label)instructions[i];
+                        string labelname = temp.getLabel();
+                        if (!labelsLocations.ContainsKey(labelname))
+                        {
+                            labelsLocations.Add(labelname, i);
+                        }
+                        else throw new Exception("Label name in use");
                     }
-                    else throw new Exception("Label name in use");
                 }
             }
+
+            this.rawInstructions = rawInstructions;
             if(rawInstructions != null)
             {
                 DrawInstructions = new ConsoleDrawing(rawInstructions, 35, 1, "ASSEMBLY PROGRAM:", ConsoleColor.Blue);
@@ -65,9 +72,267 @@ namespace ARMAssember2
                 keyBindsXIndex = max + 41;
                 keybinds = buildsKeyBinds();
                 maxLines = rawInstructions.Length - 1;
+                if (Memory.Length > Registers.Length) largestStorage = Memory.Length;
+                else largestStorage = Registers.Length;
             }
-            if(Memory.Length > Registers.Length) largestStorage = Memory.Length;
-            else largestStorage = Registers.Length;
+
+        }
+
+
+
+        public string[] enterIDE()
+        {
+            Console.CursorVisible = true;
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Clear();
+            string[] inst;
+            int xpos, index;
+            
+
+            if (rawInstructions!= null)
+            {
+                inst = rawInstructions;
+                ConsoleDrawing kbdraw = new ConsoleDrawing(new string[] { "Backspace + Space + Arrows - Self explainatory", "Esc - Exit and dont save ", "Tab - Exit and save", "F1 - Caps lock" }, keyBindsXIndex, 1, "KEYBINDS:", ConsoleColor.Yellow);
+                kbdraw.Draw();
+                Console.SetCursorPosition(0, 0);
+                foreach (string s in inst)
+                {
+                    Console.WriteLine(s);
+                }
+                index = inst.Length - 1;
+                xpos = inst[inst.Length - 1].Length;
+                Console.SetCursorPosition(xpos, index);
+            }
+            else
+            {
+                inst = new string[1];
+                xpos = 0;
+                index = 0;
+                ConsoleDrawing kbdraw = new ConsoleDrawing(new string[] { "Backspace + Space + Arrows + Delete - Self explainatory", "Esc - Exit and dont save ", "Tab - Exit and save", "F1 - Caps lock" }, 60, 1, "KEYBINDS:", ConsoleColor.Yellow);
+                kbdraw.Draw();
+                Console.SetCursorPosition(xpos, index);
+            }
+
+
+            bool caps = false;
+            while (true)
+            {
+                ConsoleKey key = Console.ReadKey(true).Key;
+                if (key == ConsoleKey.DownArrow)
+                {
+                    if (index < inst.Length - 1)
+                    {
+                        index++;
+                        if (xpos >= inst[index].Length)
+                        {
+                            Console.SetCursorPosition(inst[index].Length, index);
+                            xpos = inst[index].Length;
+                        }
+                        else
+                        {
+                            Console.SetCursorPosition(xpos, index);
+                        }
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.UpArrow)
+                {
+                    if (index > 0)
+                    {
+                        index--;
+                        if (xpos >= inst[index].Length)
+                        {
+                            Console.SetCursorPosition(inst[index].Length, index);
+                            xpos = inst[index].Length;
+                        }
+                        else
+                        {
+                            Console.SetCursorPosition(xpos, index);
+                        }
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.LeftArrow)
+                {
+                    if (Console.CursorLeft - 1 >= 0)
+                    {
+                        xpos--;
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.RightArrow)
+                {
+                    if (!(Console.CursorLeft + 1 > inst[index].Length))
+                    {
+                        xpos++;
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.Spacebar)
+                {
+                    if (inst[index] != null)
+                    {
+                        inst[index] = inst[index].Substring(0, xpos) + " " + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+                    }
+                    else
+                    {
+                        inst[index] = " ";
+                    }
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+                else if (key == ConsoleKey.Backspace)
+                {
+                    if (xpos != 0)
+                    {
+                        inst[index] = inst[index].Substring(0, xpos - 1) + inst[index].Substring(xpos);
+                        Console.SetCursorPosition(0, index);
+                        Console.Write(inst[index] + " ");
+                        xpos--;
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.D1 || key == ConsoleKey.D2 || key == ConsoleKey.D3 || key == ConsoleKey.D4 || key == ConsoleKey.D5 || key == ConsoleKey.D6 || key == ConsoleKey.D7 || key == ConsoleKey.D8 || key == ConsoleKey.D9 || key == ConsoleKey.D0 )
+                {
+                    if (inst[index] != null)
+                    {
+
+                        inst[index] = inst[index].Substring(0, xpos) + key.ToString().Substring(1) + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+
+                    }
+                    else
+                    {
+                        inst[index] = key.ToString().Substring(1);
+                    }
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+                else if(key == ConsoleKey.OemComma)
+                {
+                    if (inst[index] != null)
+                    {
+
+                            inst[index] = inst[index].Substring(0, xpos) + "," + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+
+                    }
+                    else
+                    {
+                        inst[index] = ",";
+                    }
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+                else if (key == ConsoleKey.Oem7)
+                {
+                    if (inst[index] != null)
+                    {
+
+                        inst[index] = inst[index].Substring(0, xpos) + "#" + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+
+                    }
+                    else
+                    {
+                        inst[index] = "#";
+                    }
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+                else if (key == ConsoleKey.Oem1)
+                {
+                    if (inst[index] != null)
+                    {
+
+                        inst[index] = inst[index].Substring(0, xpos) + ":" + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+
+                    }
+                    else
+                    {
+                        inst[index] = ":";
+                    }
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+                else if (key == ConsoleKey.F1)
+                {
+                    if (caps) caps = false;
+                    else caps = true;
+                }
+                else if (key == ConsoleKey.Delete)
+                {
+                    if (xpos != inst[index].Length)
+                    {
+                        inst[index] = inst[index].Substring(0, xpos) + inst[index].Substring(xpos+1);
+                        Console.SetCursorPosition(0, index);
+                        Console.Write(inst[index] + " ");
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.Escape)
+                {
+                    Console.CursorVisible = false;
+                    return this.rawInstructions;
+                }
+                else if (key == ConsoleKey.Tab)
+                {
+                    Console.CursorVisible = false;
+                    return inst;
+                }
+                else if (key == ConsoleKey.Enter)
+                {
+
+                }
+                else
+                {
+                    if (inst[index] != null)
+                    {
+                        if (caps)
+                        {
+                            inst[index] = inst[index].Substring(0, xpos) + key.ToString() + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+                        }
+                        else
+                        {
+                            inst[index] = inst[index].Substring(0, xpos) + key.ToString().ToLower() + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+                        }
+                    }
+                    else
+                    {
+                        if (caps)
+                        {
+                            inst[index] = key.ToString();
+
+                        }
+                        else
+                        {
+                            inst[index] = key.ToString().ToLower();
+                        }
+                    }
+
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+            }
+        }
+        public string getFilePath()
+        {
+            return filepath;
         }
         public void Reset()
         {
@@ -84,7 +349,7 @@ namespace ARMAssember2
 
         private string[] buildsKeyBinds()
         {
-            string[] keybinds = new string[8];
+            string[] keybinds = new string[9];
             keybinds[0] = "SpaceBar - Step 1 Instructions";
             keybinds[1] = "Enter - Run Whole Program";
             keybinds[2] = "M - Manually edit memory location";
@@ -93,18 +358,29 @@ namespace ARMAssember2
             keybinds[5] = "Q - Run program to line number";
             keybinds[6] = "Backspace - Go back a line";
             keybinds[7] = "Shift - Reset program";
+            keybinds[8] = "I - Edit Program";
             return keybinds;
 
 
         }
+        public string[] getRawInst()
+        {
+            return rawInstructions;
+        }
+        
         public int getMemorylength() { return Memory.Length; }  
         public int getRegisterLength() { return Registers.Length; }
         public void drawBlankInputBox()
         {
             string[] str = new string[1];
             str[0] = "                                   "; 
-            ConsoleDrawing inpdraw = new ConsoleDrawing(str , keyBindsXIndex, 10, "INPUT:", ConsoleColor.Green);
+            ConsoleDrawing inpdraw = new ConsoleDrawing(str , keyBindsXIndex, 12, "INPUT:", ConsoleColor.Green);
             inpdraw.Draw();
+            Console.SetCursorPosition(keyBindsXIndex + 38, 12);
+            Console.Write("╣");
+            Console.SetCursorPosition(keyBindsXIndex, 12);
+            Console.Write("╠");
+
         }
         public void displayGUI(string errorOrMsg = "")
         {    
@@ -119,6 +395,10 @@ namespace ARMAssember2
             drawBlankInputBox();
 
             drawCorners();
+        }
+        public int getKeyBindsX()
+        {
+            return keyBindsXIndex;
         }
         private void drawKeybinds()
         {
@@ -216,11 +496,11 @@ namespace ARMAssember2
             Console.Write("╣");
             Console.SetCursorPosition(35, 1);
             Console.Write("╦");
-            Console.SetCursorPosition(keyBindsXIndex, 9);
+            Console.SetCursorPosition(keyBindsXIndex, 11);
             Console.Write("╠");
             Console.SetCursorPosition(keyBindsXIndex, rawInstructions.Length + 3);
             Console.Write("╣");
-            Console.SetCursorPosition(keyBindsXIndex+38, 9);
+            Console.SetCursorPosition(keyBindsXIndex+38, 11);
             Console.Write("╣");
             if (rawInstructions.Length + 3 <= 28)
             {

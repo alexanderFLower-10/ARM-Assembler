@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace ARMAssember2
@@ -10,6 +11,8 @@ namespace ARMAssember2
         static Random rn = new Random();
         static void Main(string[] args)
         {
+            Console.WriteLine("Please enter fullscreen and click enter to continue");
+            Console.ReadLine();
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.CursorVisible = false;
             while (true)
@@ -24,53 +27,43 @@ namespace ARMAssember2
                 {
                     viewChallenges();
                 }
+                else if (choice == "M")
+                {
+                    displayInstructionManual();
+                }
+                else if (choice == "I")
+                {
+                    EnterIDE();
+                }
             }
 
         }
 
-        static string loadScreen()
-        {
-            loadScreenPart1();
-            Console.Clear();
-            return loadScreenPart2();
-
-        }
 
 
-        static void loadScreenPart1()
-        {
-            Console.WriteLine("Press m to view instruction manual or any other key to continue");
-            if (Console.ReadKey(true).Key == ConsoleKey.M) displayInstructionManual();
-            Console.WriteLine("Please enter fullscreen then press enter continue (after this screen press any key to continue)");
-            Console.ReadLine();
-            Thread.Sleep(100);
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.BackgroundColor = ConsoleColor.Black;
-            string s = "";
-            s += (" ▄▄▄       ██▀███   ███▄ ▄███▓    ▄▄▄        ██████   ██████ ▓█████  ███▄ ▄███▓ ▄▄▄▄   ▓█████  ██▓    ▓█████  ██▀███      ▄▄▄▄    ▄▄▄        ██████ ▓█████ ▓█████▄             \r\n▒████▄    ▓██ ▒ ██▒▓██▒▀█▀ ██▒   ▒████▄    ▒██    ▒ ▒██    ▒ ▓█   ▀ ▓██▒▀█▀ ██▒▓█████▄ ▓█   ▀ ▓██▒    ▓█   ▀ ▓██ ▒ ██▒   ▓█████▄ ▒████▄    ▒██    ▒ ▓█   ▀ ▒██▀ ██▌            \r\n▒██  ▀█▄  ▓██ ░▄█ ▒▓██    ▓██░   ▒██  ▀█▄  ░ ▓██▄   ░ ▓██▄   ▒███   ▓██    ▓██░▒██▒ ▄██▒███   ▒██░    ▒███   ▓██ ░▄█ ▒   ▒██▒ ▄██▒██  ▀█▄  ░ ▓██▄   ▒███   ░██   █▌            \r\n░██▄▄▄▄██ ▒██▀▀█▄  ▒██    ▒██    ░██▄▄▄▄██   ▒   ██▒  ▒   ██▒▒▓█  ▄ ▒██    ▒██ ▒██░█▀  ▒▓█  ▄ ▒██░    ▒▓█  ▄ ▒██▀▀█▄     ▒██░█▀  ░██▄▄▄▄██   ▒   ██▒▒▓█  ▄ ░▓█▄   ▌            \r\n ▓█   ▓██▒░██▓ ▒██▒▒██▒   ░██▒    ▓█   ▓██▒▒██████▒▒▒██████▒▒░▒████▒▒██▒   ░██▒░▓█  ▀█▓░▒████▒░██████▒░▒████▒░██▓ ▒██▒   ░▓█  ▀█▓ ▓█   ▓██▒▒██████▒▒░▒████▒░▒████▓             \r\n ▒▒   ▓▒█░░ ▒▓ ░▒▓░░ ▒░   ░  ░    ▒▒   ▓▒█░▒ ▒▓▒ ▒ ░▒ ▒▓▒ ▒ ░░░ ▒░ ░░ ▒░   ░  ░░▒▓███▀▒░░ ▒░ ░░ ▒░▓  ░░░ ▒░ ░░ ▒▓ ░▒▓░   ░▒▓███▀▒ ▒▒   ▓▒█░▒ ▒▓▒ ▒ ░░░ ▒░ ░ ▒▒▓  ▒             \r\n  ▒   ▒▒ ░  ░▒ ░ ▒░░  ░      ░     ▒   ▒▒ ░░ ░▒  ░ ░░ ░▒  ░ ░ ░ ░  ░░  ░      ░▒░▒   ░  ░ ░  ░░ ░ ▒  ░ ░ ░  ░  ░▒ ░ ▒░   ▒░▒   ░   ▒   ▒▒ ░░ ░▒  ░ ░ ░ ░  ░ ░ ▒  ▒             \r\n  ░   ▒     ░░   ░ ░      ░        ░   ▒   ░  ░  ░  ░  ░  ░     ░   ░      ░    ░    ░    ░     ░ ░      ░     ░░   ░     ░    ░   ░   ▒   ░  ░  ░     ░    ░ ░  ░             \r\n      ░  ░   ░            ░            ░  ░      ░        ░     ░  ░       ░    ░         ░  ░    ░  ░   ░  ░   ░         ░            ░  ░      ░     ░  ░   ░                \r\n                                                                                     ░                                         ░                            ░      \n");
-            s += (" ▒█████   ███▄    █     ▄▄▄        █████   ▄▄▄          ██▓ ███▄    █   ██████ ▄▄▄█████▓ ██▀███   █    ██  ▄████▄  ▄▄▄█████▓ ██▓ ▒█████   ███▄    █      ██████ ▓█████▄▄▄█████▓\r\n▒██▒  ██▒ ██ ▀█   █    ▒████▄    ▒██▓  ██▒▒████▄       ▓██▒ ██ ▀█   █ ▒██    ▒ ▓  ██▒ ▓▒▓██ ▒ ██▒ ██  ▓██▒▒██▀ ▀█  ▓  ██▒ ▓▒▓██▒▒██▒  ██▒ ██ ▀█   █    ▒██    ▒ ▓█   ▀▓  ██▒ ▓▒\r\n▒██░  ██▒▓██  ▀█ ██▒   ▒██  ▀█▄  ▒██▒  ██░▒██  ▀█▄     ▒██▒▓██  ▀█ ██▒░ ▓██▄   ▒ ▓██░ ▒░▓██ ░▄█ ▒▓██  ▒██░▒▓█    ▄ ▒ ▓██░ ▒░▒██▒▒██░  ██▒▓██  ▀█ ██▒   ░ ▓██▄   ▒███  ▒ ▓██░ ▒░\r\n▒██   ██░▓██▒  ▐▌██▒   ░██▄▄▄▄██ ░██  █▀ ░░██▄▄▄▄██    ░██░▓██▒  ▐▌██▒  ▒   ██▒░ ▓██▓ ░ ▒██▀▀█▄  ▓▓█  ░██░▒▓▓▄ ▄██▒░ ▓██▓ ░ ░██░▒██   ██░▓██▒  ▐▌██▒     ▒   ██▒▒▓█  ▄░ ▓██▓ ░ \r\n░ ████▓▒░▒██░   ▓██░    ▓█   ▓██▒░▒███▒█▄  ▓█   ▓██▒   ░██░▒██░   ▓██░▒██████▒▒  ▒██▒ ░ ░██▓ ▒██▒▒▒█████▓ ▒ ▓███▀ ░  ▒██▒ ░ ░██░░ ████▓▒░▒██░   ▓██░   ▒██████▒▒░▒████▒ ▒██▒ ░ \r\n░ ▒░▒░▒░ ░ ▒░   ▒ ▒     ▒▒   ▓▒█░░░ ▒▒░ ▒  ▒▒   ▓▒█░   ░▓  ░ ▒░   ▒ ▒ ▒ ▒▓▒ ▒ ░  ▒ ░░   ░ ▒▓ ░▒▓░░▒▓▒ ▒ ▒ ░ ░▒ ▒  ░  ▒ ░░   ░▓  ░ ▒░▒░▒░ ░ ▒░   ▒ ▒    ▒ ▒▓▒ ▒ ░░░ ▒░ ░ ▒ ░░   \r\n  ░ ▒ ▒░ ░ ░░   ░ ▒░     ▒   ▒▒ ░ ░ ▒░  ░   ▒   ▒▒ ░    ▒ ░░ ░░   ░ ▒░░ ░▒  ░ ░    ░      ░▒ ░ ▒░░░▒░ ░ ░   ░  ▒       ░     ▒ ░  ░ ▒ ▒░ ░ ░░   ░ ▒░   ░ ░▒  ░ ░ ░ ░  ░   ░    \r\n░ ░ ░ ▒     ░   ░ ░      ░   ▒      ░   ░   ░   ▒       ▒ ░   ░   ░ ░ ░  ░  ░    ░        ░░   ░  ░░░ ░ ░ ░          ░       ▒ ░░ ░ ░ ▒     ░   ░ ░    ░  ░  ░     ░    ░      \r\n    ░ ░           ░          ░  ░    ░          ░  ░    ░           ░       ░              ░        ░     ░ ░                ░      ░ ░           ░          ░     ░  ░        ");
-            s += "\n"; s += "\n"; s += "\n"; s += "\n"; s += "\n"; s += "\n"; s += "\n"; s += "\n"; s += "\n"; s += "\n";
-
-            s += ("                        __        __                   __                          __             ____              __         \r\n   ____ ___  ____ _____/ /__     / /_  __  __   ____ _/ /__  _  ______ _____  ____/ /__  _____   / __/___ _      __/ /__  _____\r\n  / __ `__ \\/ __ `/ __  / _ \\   / __ \\/ / / /  / __ `/ / _ \\| |/_/ __ `/ __ \\/ __  / _ \\/ ___/  / /_/ __ \\ | /| / / / _ \\/ ___/\r\n / / / / / / /_/ / /_/ /  __/  / /_/ / /_/ /  / /_/ / /  __/>  </ /_/ / / / / /_/ /  __/ /     / __/ /_/ / |/ |/ / /  __/ /    \r\n/_/ /_/ /_/\\__,_/\\__,_/\\___/  /_.___/\\__, /   \\__,_/_/\\___/_/|_|\\__,_/_/ /_/\\__,_/\\___/_/     /_/  \\____/|__/|__/_/\\___/_/     \r\n                                    /____/                                                                                   ");
-            Console.WriteLine(s);
-            Console.ReadKey(true);
-        }
 
         static void displayInstructionManual()
         {
+            string[] lines = File.ReadAllLines(@"Misc\manual.txt");
             Console.Clear();
-            Console.WriteLine("Instruction Manual For ARM Emulator Based on AQA Instruction Set\r\n\r\nThis program is made up of 2 main components\r\n\r\nViewing/Attempting challenges:\r\n>This shows the user a comprehensive list of assembly challenges they may wish to attempt, if they do\r\n\r\n>You will be asked to enter a filename for your program to be loaded\r\n>This program is then tested against the output from random testcases of premade programs which produce a valid solution to the challenge\r\n>If all of your program outputs match the correct solution it will be marked as valid and you have the option to save   the progress under your name\r\n>If not, failed testcases, the result produced and the result meant to be produced will be specified\r\n\nLoad Program:\r\n>Ensure .txt or .asm file (specify when asked for filename) is placed in bin debug folder of solution\r\n>Enter filename when prompted\r\n>This will then attempt to parse your program to prepare it to be exectued\r\n>Errors are then checked for in the syntax\r\n>Afterwards your program will be loaded, from there follow the key binds to execute your program\r\n>Many debugging tools are included\r\n\r\nExtra function, Indirect addressing:\r\n> Indirect addressing is where the operand of an instruction is the memory address of a number stored in a register\r\n> To do this, use square brackets\r\n> For example, if I wanted to access the memory address stored in register R0, get the value, and add it to R1:\r\n>> ADD R1, R1, [R0]\r\n> If R1 = 5, R0 = 2 and Memory address location 2 stored the values 4:\r\n>> Operand is the value of the memory address location stored in R0 so values of memory address location 2 = 4\r\n\r\n--Made by Alexander Fowler\r\n");
-            Console.WriteLine("Press enter to continie");
+            foreach(string line in lines)
+            {
+                Console.WriteLine(line);
+            }
             Console.ReadLine();
             Console.Clear();
 
         }
-        static string loadScreenPart2()
+        static string loadScreen()
         {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("    ____                         __  ___   __                 _                 __  __                                              __\r\n   / __ \\________  __________   /  |/  /  / /_____     _   __(_)__ _      __   / /_/ /_  ___     ____ ___  ____ _____  __  ______ _/ /\r\n  / /_/ / ___/ _ \\/ ___/ ___/  / /|_/ /  / __/ __ \\   | | / / / _ \\ | /| / /  / __/ __ \\/ _ \\   / __ `__ \\/ __ `/ __ \\/ / / / __ `/ / \r\n / ____/ /  /  __(__  |__  )  / /  / /  / /_/ /_/ /   | |/ / /  __/ |/ |/ /  / /_/ / / /  __/  / / / / / / /_/ / / / / /_/ / /_/ / /  \r\n/_/   /_/   \\___/____/____/  /_/  /_/   \\__/\\____/    |___/_/\\___/|__/|__/   \\__/_/ /_/\\___/  /_/ /_/ /_/\\__,_/_/ /_/\\__,_/\\__,_/_/   \r\n                                                                                                                                      ");
+            Console.WriteLine();
             Console.Write("    ____                         ______   __                 __  __                       __        __         _                      __          ____                          \r\n   / __ \\________  __________   / ____/  / /_____     ____ _/ /_/ /____  ____ ___  ____  / /_     _/_/  _   __(_)__ _      __   _____/ /_  ____ _/ / /__  ____  ____ ____  _____\r\n  / /_/ / ___/ _ \\/ ___/ ___/  / /      / __/ __ \\   / __ `/ __/ __/ _ \\/ __ `__ \\/ __ \\/ __/   _/_/   | | / / / _ \\ | /| / /  / ___/ __ \\/ __ `/ / / _ \\/ __ \\/ __ `/ _ \\/ ___/\r\n / ____/ /  /  __(__  |__  )  / /___   / /_/ /_/ /  / /_/ / /_/ /_/  __/ / / / / / /_/ / /_   _/_/     | |/ / /  __/ |/ |/ /  / /__/ / / / /_/ / / /  __/ / / / /_/ /  __(__  ) \r\n/_/   /_/   \\___/____/____/   \\____/   \\__/\\____/   \\__,_/\\__/\\__/\\___/_/ /_/ /_/ .___/\\__/  /_/       |___/_/\\___/|__/|__/   \\___/_/ /_/\\__,_/_/_/\\___/_/ /_/\\__, /\\___/____/  \r\n                                                                               /_/                                                                           /____/             ");
             Console.WriteLine();
             Console.Write("    ____                         __       __           __                __                                                      \r\n   / __ \\________  __________   / /      / /_____     / /___  ____ _____/ /  ____ _   ____  _________  ____ __________ _____ ___ \r\n  / /_/ / ___/ _ \\/ ___/ ___/  / /      / __/ __ \\   / / __ \\/ __ `/ __  /  / __ `/  / __ \\/ ___/ __ \\/ __ `/ ___/ __ `/ __ `__ \\\r\n / ____/ /  /  __(__  |__  )  / /___   / /_/ /_/ /  / / /_/ / /_/ / /_/ /  / /_/ /  / /_/ / /  / /_/ / /_/ / /  / /_/ / / / / / /\r\n/_/   /_/   \\___/____/____/  /_____/   \\__/\\____/  /_/\\____/\\__,_/\\__,_/   \\__,_/  / .___/_/   \\____/\\__, /_/   \\__,_/_/ /_/ /_/ \r\n                                                                                  /_/               /____/                       ");
+            Console.WriteLine();
+            Console.WriteLine("    ____                         ____   __                                __          __         ___ __                                               \r\n   / __ \\________  __________   /  _/  / /_____     _____________  ____ _/ /____    _/_/__  ____/ (_) /_   ____  _________  ____ __________ _____ ___ \r\n  / /_/ / ___/ _ \\/ ___/ ___/   / /   / __/ __ \\   / ___/ ___/ _ \\/ __ `/ __/ _ \\ _/_// _ \\/ __  / / __/  / __ \\/ ___/ __ \\/ __ `/ ___/ __ `/ __ `__ \\\r\n / ____/ /  /  __(__  |__  )  _/ /   / /_/ /_/ /  / /__/ /  /  __/ /_/ / /_/  __//_/ /  __/ /_/ / / /_   / /_/ / /  / /_/ / /_/ / /  / /_/ / / / / / /\r\n/_/   /_/   \\___/____/____/  /___/   \\__/\\____/   \\___/_/   \\___/\\__,_/\\__/\\___/_/   \\___/\\__,_/_/\\__/  / .___/_/   \\____/\\__, /_/   \\__,_/_/ /_/ /_/ \r\n                                                                                                       /_/               /____/                       ");
             Console.WriteLine();
 
             while (true)
@@ -83,6 +76,14 @@ namespace ARMAssember2
                 else if (key == ConsoleKey.L)
                 {
                     return "L";
+                }
+                else if (key == ConsoleKey.M)
+                {
+                    return "M";
+                }
+                else if (key == ConsoleKey.I)
+                {
+                    return "I";
                 }
 
             }
@@ -151,6 +152,10 @@ namespace ARMAssember2
                         ARM.SetRegisterVal(Rn, Operand2);
                         displayEverything(ARM);
                     }
+                    else if (key == ConsoleKey.I)
+                    {
+                        ARM.enterIDE();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -163,14 +168,58 @@ namespace ARMAssember2
 
             }
         }
+
+        static void EnterIDE()
+        {
+            var fileinfo = getRawFile("    ______      __               _____ __                                         ____              __      __  _           \r\n   / ____/___  / /____  _____   / __(_) /__  ____  ____ _____ ___  ___     ____  / __/  _________  / /_  __/ /_(_)___  ____ \r\n  / __/ / __ \\/ __/ _ \\/ ___/  / /_/ / / _ \\/ __ \\/ __ `/ __ `__ \\/ _ \\   / __ \\/ /_   / ___/ __ \\/ / / / / __/ / __ \\/ __ \\\r\n / /___/ / / / /_/  __/ /     / __/ / /  __/ / / / /_/ / / / / / /  __/  / /_/ / __/  (__  ) /_/ / / /_/ / /_/ / /_/ / / / /\r\n/_____/_/ /_/\\__/\\___/_/     /_/ /_/_/\\___/_/ /_/\\__,_/_/ /_/ /_/\\___/   \\____/_/    /____/\\____/_/\\__,_/\\__/_/\\____/_/ /_/ \r\n                                                                                                                            \n\n\n Or press enter to create a new file");
+            string[] rawInstructions = fileinfo.Item1;
+            string filename = fileinfo.Item2;
+            ARMEmulator ARM = new ARMEmulator(null, null, null);
+            if (filename == "NewFile")
+            {
+                ARM = new ARMEmulator(null, null, null);
+            }
+            else
+            {
+                ARM = new ARMEmulator(null, rawInstructions, null);
+            }
+            string[] newRawInst = ARM.enterIDE();
+            if (filename == "NewFile")
+            {
+                Console.Clear();
+                Console.WriteLine("Enter desired filename to store this under (without filename extension)");
+                FileStream fs = new FileStream(Console.ReadLine() + ".asm", FileMode.Create);
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    foreach (string s in newRawInst)
+                    {
+                        sw.WriteLine(s);
+                    }
+                }
+            }
+            else
+            {
+                Console.Clear();
+                using (StreamWriter sw = new StreamWriter(filename, false))
+                {
+                    foreach(string s in newRawInst)
+                    {
+                        sw.WriteLine(s);
+                    }
+                }
+            }
+            Console.Clear();
+        }
         // All loading a program subroutines ↓↓↓
         static ARMEmulator LoadProgram()
         {
             // Loads a program
             List<Instruction> list = new List<Instruction>() { new Label("Error") };
-            ARMEmulator result = new ARMEmulator(list, null);
+            ARMEmulator result = new ARMEmulator(list, null, "");
             Console.WriteLine("LOAD PROJECT");
-            string[] rawInstructions = getRawFile();
+            var fileinfo = getRawFile();
+            string[] rawInstructions = fileinfo.Item1;
+            string filepath = fileinfo.Item2;
             var instructions = getInstListSafe(rawInstructions);
             bool customisedMemory = false;
             int memCount = -1;
@@ -196,24 +245,29 @@ namespace ARMAssember2
             }
             if (customisedMemory)
             {
-                result = new ARMEmulator(instructions, rawInstructions, 0, regCount, memCount);
+                result = new ARMEmulator(instructions, rawInstructions,filepath,  0, regCount, memCount);
             }
             if (!customisedMemory)
             {
-                result = new ARMEmulator(instructions, rawInstructions, 0);
+                result = new ARMEmulator(instructions, rawInstructions,filepath, 0);
             }
             Console.Clear();
             return result;
         }
-        static string[] getRawFile(string message = "    ____  __                                   __               _____ __                                 \r\n   / __ \\/ /__  ____ _________     ___  ____  / /____  _____   / __(_) /__  ____  ____ _____ ___  ___  _ \r\n  / /_/ / / _ \\/ __ `/ ___/ _ \\   / _ \\/ __ \\/ __/ _ \\/ ___/  / /_/ / / _ \\/ __ \\/ __ `/ __ `__ \\/ _ \\(_)\r\n / ____/ /  __/ /_/ (__  )  __/  /  __/ / / / /_/  __/ /     / __/ / /  __/ / / / /_/ / / / / / /  __/   \r\n/_/   /_/\\___/\\__,_/____/\\___/   \\___/_/ /_/\\__/\\___/_/     /_/ /_/_/\\___/_/ /_/\\__,_/_/ /_/ /_/\\___(_)  \r\n                                                                                                         ")
+        static Tuple<string[], string> getRawFile(string message = "    ____  __                                   __               _____ __                                 \r\n   / __ \\/ /__  ____ _________     ___  ____  / /____  _____   / __(_) /__  ____  ____ _____ ___  ___  _ \r\n  / /_/ / / _ \\/ __ `/ ___/ _ \\   / _ \\/ __ \\/ __/ _ \\/ ___/  / /_/ / / _ \\/ __ \\/ __ `/ __ `__ \\/ _ \\(_)\r\n / ____/ /  __/ /_/ (__  )  __/  /  __/ / / / /_/  __/ /     / __/ / /  __/ / / / /_/ / / / / / /  __/   \r\n/_/   /_/\\___/\\__,_/____/\\___/   \\___/_/ /_/\\__/\\___/_/     /_/ /_/_/\\___/_/ /_/\\__,_/_/ /_/ /_/\\___(_)  \r\n                                                                                                         ")
         {
             // Gets filename from user
             Console.Clear();
             string[] res;
+            string filepath;
             while (true)
             {
                 Console.WriteLine(message);
-                string filepath = Console.ReadLine();
+                filepath = Console.ReadLine();
+                if(filepath == "")
+                {
+                    return Tuple.Create(new string[0], "NewFile");
+                }
                 try
                 {
                     res = File.ReadAllLines(filepath);
@@ -227,7 +281,7 @@ namespace ARMAssember2
 
                 }
             }
-            return res;
+            return Tuple.Create(res, filepath);
         }
         static List<Instruction> getInstListSafe(string[] insts)
         {
@@ -349,7 +403,7 @@ namespace ARMAssember2
             while (true)
             {
                 ARM.drawBlankInputBox();
-                Console.SetCursorPosition(xpo, 12);
+                Console.SetCursorPosition(xpo, 14);
                 Console.Write(message);
                 Console.CursorVisible = true;
                 try
@@ -363,7 +417,7 @@ namespace ARMAssember2
                 catch (Exception)
                 {
                     ARM.drawBlankInputBox();
-                    Console.SetCursorPosition(xpo, 12);
+                    Console.SetCursorPosition(xpo, 14);
                     Console.Write("Invalid input, press any key to continue");
                 }
             }
@@ -414,7 +468,6 @@ namespace ARMAssember2
             Console.WriteLine("    ____                         ____     __                      _                   __  __                      __          ____                          \r\n   / __ \\________  __________   / __ \\   / /_____     _   _____  (_)      __   ____  / /_/ /_  ___  _____   _____/ /_  ____ _/ / /__  ____  ____ ____  _____\r\n  / /_/ / ___/ _ \\/ ___/ ___/  / / / /  / __/ __ \\   | | / / _ \\/ / | /| / /  / __ \\/ __/ __ \\/ _ \\/ ___/  / ___/ __ \\/ __ `/ / / _ \\/ __ \\/ __ `/ _ \\/ ___/\r\n / ____/ /  /  __(__  |__  )  / /_/ /  / /_/ /_/ /   | |/ /  __/ /| |/ |/ /  / /_/ / /_/ / / /  __/ /     / /__/ / / / /_/ / / /  __/ / / / /_/ /  __(__  ) \r\n/_/   /_/   \\___/____/____/   \\____/   \\__/\\____/    |___/\\___/_/ |__/|__/   \\____/\\__/_/ /_/\\___/_/      \\___/_/ /_/\\__,_/_/_/\\___/_/ /_/\\__, /\\___/____/  \r\n                                                                                                                                         /____/             ");
             Console.WriteLine();
             Console.WriteLine("For both use arrow keys to control");
-            Console.ForegroundColor = ConsoleColor.Gray;
             while (true)
             {
 
@@ -429,7 +482,6 @@ namespace ARMAssember2
                     displayOtherChallenges();
                 }
             }
-            Console.ForegroundColor = ConsoleColor.DarkRed;
 
         }
 
@@ -514,9 +566,11 @@ namespace ARMAssember2
         static void attemptOtherChallenge(int num, string diff)
         {
 
-            string[] rawInstructions = getRawFile("    ______      __               _____ __                                         ____              __      __  _           \r\n   / ____/___  / /____  _____   / __(_) /__  ____  ____ _____ ___  ___     ____  / __/  _________  / /_  __/ /_(_)___  ____ \r\n  / __/ / __ \\/ __/ _ \\/ ___/  / /_/ / / _ \\/ __ \\/ __ `/ __ `__ \\/ _ \\   / __ \\/ /_   / ___/ __ \\/ / / / / __/ / __ \\/ __ \\\r\n / /___/ / / / /_/  __/ /     / __/ / /  __/ / / / /_/ / / / / / /  __/  / /_/ / __/  (__  ) /_/ / / /_/ / /_/ / /_/ / / / /\r\n/_____/_/ /_/\\__/\\___/_/     /_/ /_/_/\\___/_/ /_/\\__,_/_/ /_/ /_/\\___/   \\____/_/    /____/\\____/_/\\__,_/\\__/_/\\____/_/ /_/ \r\n                                                                                                                            ");
+            var fileinfo = getRawFile("    ______      __               _____ __                                         ____              __      __  _           \r\n   / ____/___  / /____  _____   / __(_) /__  ____  ____ _____ ___  ___     ____  / __/  _________  / /_  __/ /_(_)___  ____ \r\n  / __/ / __ \\/ __/ _ \\/ ___/  / /_/ / / _ \\/ __ \\/ __ `/ __ `__ \\/ _ \\   / __ \\/ /_   / ___/ __ \\/ / / / / __/ / __ \\/ __ \\\r\n / /___/ / / / /_/  __/ /     / __/ / /  __/ / / / /_/ / / / / / /  __/  / /_/ / __/  (__  ) /_/ / / /_/ / /_/ / /_/ / / / /\r\n/_____/_/ /_/\\__/\\___/_/     /_/ /_/_/\\___/_/ /_/\\__,_/_/ /_/ /_/\\___/   \\____/_/    /____/\\____/_/\\__,_/\\__/_/\\____/_/ /_/ \r\n                                                                                                                            ");
+            string[] rawInstructions = fileinfo.Item1;
+            string filename = fileinfo.Item2;
             var instructons = getInstList(rawInstructions);
-            ARMEmulator userprogram = new ARMEmulator(instructons, rawInstructions);
+            ARMEmulator userprogram = new ARMEmulator(instructons, rawInstructions, filename);
             Console.Clear();
             if (diff == "E")
             {
@@ -531,7 +585,7 @@ namespace ARMAssember2
         {
             string[] rawInstructions = caeserDecrypt($@"Solutions\{diff}{num}.asm");
             List<Instruction> instList = getInstListSafe(rawInstructions);
-            return new ARMEmulator(instList, rawInstructions);
+            return new ARMEmulator(instList, rawInstructions, $@"Solutions\{diff}{num}.asm");
         }
 
         static int testCase(ARMEmulator ARM, string solutionLoc, int solutionIndex)
@@ -656,38 +710,16 @@ namespace ARMAssember2
             Console.ReadLine();
         }
 
+        static void attemptE2(ARMEmulator userProgram)
+        {
+
+        }
+
         static void failTestCase(string message)
         {
             Console.WriteLine("Press any key to exit");
             Console.ReadKey(true);
             Environment.Exit(0);
-        }
-        static void attemptE2(ARMEmulator userProgram)
-        {
-            ARMEmulator solution = getSolution(2, "E");
-            for (int i = 0; i < 1000; i++)
-            {
-                var cases = inputTwoValTestCases(solution, userProgram, "M1", "M2");
-                int testCaseMVal1 = cases.Item1;
-                int testCaseMVal2 = cases.Item2;
-                int requiredresult = testCase(solution, "M", 0);
-                solution.Reset();
-                int userresult = testCase(userProgram, "M", 0);
-                userProgram.Reset();
-                if (userresult != requiredresult)
-                {
-                    Console.WriteLine($"Testcase {i + 1} FAILED: M1 = {testCaseMVal1} M2 = {testCaseMVal2} Expected M0 = {requiredresult} Your M0 = {userresult}");
-                    Console.WriteLine("Press any key to exit");
-                    Console.ReadKey(true);
-                    Environment.Exit(0);
-                }
-                else
-                {
-                    Console.WriteLine(twoInputPassedResultBuilder(i + 1, "M1", testCaseMVal1, "M2", testCaseMVal2, "M0", requiredresult, userresult));
-                }
-            }
-            Console.WriteLine("Program is valid");
-            Console.ReadLine();
         }
 
 

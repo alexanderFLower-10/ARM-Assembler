@@ -1,0 +1,22 @@
+Instruction Manual for Assembly Learning Tool (Based on AQA Instruction Set)
+
+Step 1 (Creating a file):
+> Create a new file in the debug folder of the .asm (for editing in visual studio *reccomended) or .txt (for editing in notepad)
+> Refer to AQA Instruction set for making this and remember to add a HALT statement
+> Ensure to save file before running program
+
+Step 2:
+> You can then choose to either load your program or view/attempt challenges
+
+Load a program:
+> When loading a program, you will be prompted with any parsing errors that occur if any do occur
+> If not, you will then be greeted with a console GUI
+> From there you can utilise the keybinds to run and debug any assembly program
+
+View/Attempt a challenge;
+> There is 2 categories of challenges, AQA (Real questions from past AQA papers) and Others (Challenges made by me including 3 categories: easy, medium and hard)
+> Once selected a category, you will then be greeted with a challenge, you can cycle through each challenge via the arrow keys
+> After making an attempt at a challenge and referring to step 1 to ensure it is in the right place, you can then attempt it
+> This runs your program against my assembly coded solution to the program, and will compare outputs
+
+
