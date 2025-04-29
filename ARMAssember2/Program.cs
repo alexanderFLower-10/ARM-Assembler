@@ -7,7 +7,7 @@ namespace ARMAssember2
 {
     internal class Program
     {
-
+        static Random rn = new Random();
         static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -534,88 +534,156 @@ namespace ARMAssember2
             return new ARMEmulator(instList, rawInstructions);
         }
 
+        static int testCase(ARMEmulator ARM, string solutionLoc, int solutionIndex)
+        {
+            while (true)
+            {
+                try
+                {
+                    ARM.Step();
+                }
+                catch (HALTException)
+                {
+                    break;
+                }
+
+                catch (Exception e)
+                {
+                    Console.Clear();
+                    Console.WriteLine(e.Message);
+                }
+
+            }
+            if (solutionLoc == "R")
+            {
+                return ARM.GetRegisterVal(solutionIndex);
+
+            }
+            else if (solutionLoc == "M")
+            {
+                return ARM.GetMemoryVal(solutionIndex);
+            }
+            else throw new ArgumentException("Invalid solution location");
+        }
+
+        static string twoInputPassedResultBuilder(int testCaseNum, string case1Loc, int case1Val, string case2Loc, int case2Val, string resultLocation, int requiredresult, int userresult)
+        {
+            string result = $"Testcase {testCaseNum}";
+            for (int j = testCaseNum.ToString().Length; j < 5; j++)
+            {
+                result += " ";
+            }
+            result += $"PASSED: {case1Loc} = {case1Val}";
+            for (int j = case1Val.ToString().Length; j < 5; j++)
+            {
+                result += " ";
+            }
+            result += $" {case2Loc} = {case2Val}";
+            for (int j = case2Val.ToString().Length; j < 5; j++)
+            {
+                result += " ";
+            }
+            result += $" Expected {resultLocation} = {requiredresult}";
+            for (int j = requiredresult.ToString().Length; j < 5; j++)
+            {
+                result += " ";
+            }
+            result += $" Your {resultLocation} = ";
+            result += userresult.ToString();
+            for (int j = requiredresult.ToString().Length; j < 5; j++)
+            {
+                result += " ";
+            }
+            return result ;
+        }
+
+        static Tuple<int, int> inputTwoValTestCases(ARMEmulator sol, ARMEmulator user, string loc1, string loc2)
+        {
+
+             if (loc1[0] == 'M')
+            {
+                int addy1 = Convert.ToInt32(loc1.Substring(1));
+                int testcase1 = rn.Next(1, 10000);
+                sol.SetMemoryVal(addy1, testcase1);
+                user.SetMemoryVal(addy1, testcase1);
+
+                int addy2 = Convert.ToInt32(loc2.Substring(1));
+                int testcase2 = rn.Next(1, 10000);
+                sol.SetMemoryVal(addy2, testcase2);
+                user.SetMemoryVal(addy2, testcase2);
+                return Tuple.Create(testcase1 , testcase2);
+            }
+            else if (loc1[0] == 'R')
+            {
+                int addy1 = Convert.ToInt32(loc1.Substring(1));
+                int testcase1 = rn.Next(1, 10000);
+                sol.SetMemoryVal(addy1, testcase1);
+                user.SetMemoryVal(addy1, testcase1);
+
+                int addy2 = Convert.ToInt32(loc2.Substring(1));
+                int testcase2 = rn.Next(1, 10000);
+                sol.SetRegisterVal(addy2, testcase2);
+                user.SetRegisterVal(addy2, testcase2);
+                return Tuple.Create(testcase1, testcase2);
+            }
+            else throw new Exception();
+        }
         static void attemptE1(ARMEmulator userProgram)
         {
             ARMEmulator solution = getSolution(1, "E");
-            Random rn = new Random();
-            int testCaseMVal1, testCaseMVal2;
             for (int i = 0; i < 1000; i++)
             {
+                var cases = inputTwoValTestCases(solution, userProgram, "M1", "M2");
+                int testCaseMVal1 = cases.Item1;
+                int testCaseMVal2 = cases.Item2;
+                int requiredresult = testCase(solution, "M", 0);
                 solution.Reset();
+                int userresult = testCase(userProgram, "M", 0);
                 userProgram.Reset();
-                testCaseMVal1 = rn.Next(1, 1000);
-                testCaseMVal2 = rn.Next(1, 1000);
-                userProgram.SetMemoryVal(1, testCaseMVal1);
-                userProgram.SetMemoryVal(2, testCaseMVal2);
-                solution.SetMemoryVal(1, testCaseMVal1);
-                solution.SetMemoryVal(2, testCaseMVal2);
-                while (true)
+                if (userresult != requiredresult)
                 {
-                    try
-                    {
-                        solution.Step();
-
-                    }
-                    catch (HALTException)
-                    {
-                        break;
-                    }
-
-                }
-                int requiredresult = solution.GetMemoryVal(0);
-                while (true)
-                {
-                    try
-                    {
-                        userProgram.Step();
-
-                    }
-                    catch (HALTException)
-                    {
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        Console.Clear();
-                        Console.WriteLine(e.Message);
-                    }
-                }
-                if (userProgram.GetMemoryVal(0) != requiredresult)
-                {
-                    Console.WriteLine($"Testcase {i + 1} FAILED: M1 = {testCaseMVal1} M2 = {testCaseMVal2} Expected M0 = {requiredresult} Your M0 = {userProgram.GetMemoryVal(0)}");
+                    failTestCase($"Testcase {i + 1} FAILED: M1 = {testCaseMVal1} M2 = {testCaseMVal2} Expected M0 = {requiredresult} Your M0 = {userresult}");
                     Console.WriteLine("Press any key to exit");
                     Console.ReadKey(true);
                     Environment.Exit(0);
                 }
                 else
                 {
-                    string result = $"Testcase {i + 1}";
-                    for (int j = (i+1).ToString().Length; j < 5; j++)
-                    {
-                        result += " ";
-                    }
-                    result += $"PASSED: M1 = {testCaseMVal1}";
-                    for (int j = testCaseMVal1.ToString().Length; j < 5; j++)
-                    {
-                        result += " ";
-                    }
-                    result += $" M2 = {testCaseMVal2}";
-                    for (int j = testCaseMVal2.ToString().Length; j < 5; j++)
-                    {
-                        result += " ";
-                    }
-                    result += $" Expected M0 = {requiredresult}";
-                    for (int j = requiredresult.ToString().Length; j < 5; j++)
-                    {
-                        result += " ";
-                    }
-                    result += " Your M0 = ";
-                    result += userProgram.GetMemoryVal(0).ToString();
-                    for (int j = requiredresult.ToString().Length; j < 5; j++)
-                    {
-                        result += " ";
-                    }
-                    Console.WriteLine(result);
+                    Console.WriteLine(twoInputPassedResultBuilder(i+1, "M1", testCaseMVal1, "M2", testCaseMVal2, "M0", requiredresult, userresult));
+                }
+            }
+            Console.WriteLine("Program is valid");
+            Console.ReadLine();
+        }
+
+        static void failTestCase(string message)
+        {
+            Console.WriteLine("Press any key to exit");
+            Console.ReadKey(true);
+            Environment.Exit(0);
+        }
+        static void attemptE2(ARMEmulator userProgram)
+        {
+            ARMEmulator solution = getSolution(2, "E");
+            for (int i = 0; i < 1000; i++)
+            {
+                var cases = inputTwoValTestCases(solution, userProgram, "M1", "M2");
+                int testCaseMVal1 = cases.Item1;
+                int testCaseMVal2 = cases.Item2;
+                int requiredresult = testCase(solution, "M", 0);
+                solution.Reset();
+                int userresult = testCase(userProgram, "M", 0);
+                userProgram.Reset();
+                if (userresult != requiredresult)
+                {
+                    Console.WriteLine($"Testcase {i + 1} FAILED: M1 = {testCaseMVal1} M2 = {testCaseMVal2} Expected M0 = {requiredresult} Your M0 = {userresult}");
+                    Console.WriteLine("Press any key to exit");
+                    Console.ReadKey(true);
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    Console.WriteLine(twoInputPassedResultBuilder(i + 1, "M1", testCaseMVal1, "M2", testCaseMVal2, "M0", requiredresult, userresult));
                 }
             }
             Console.WriteLine("Program is valid");
