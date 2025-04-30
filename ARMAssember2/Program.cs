@@ -154,7 +154,10 @@ namespace ARMAssember2
                     }
                     else if (key == ConsoleKey.I)
                     {
-                        ARM.enterIDE();
+                        string[] modified = ARM.enterIDE();
+                        ARM = new ARMEmulator(getInstListSafe(modified), modified, ARM.getFilePath());
+                        Console.Clear();
+                        ARM.displayGUI();
                     }
                 }
                 catch (Exception e)
@@ -297,10 +300,12 @@ namespace ARMAssember2
                 }
                 catch (InstParsingException e)
                 {
+                    Console.Clear();
                     parsingError(e.Message);
                 }
                 catch (Exception e)
                 {
+                    Console.Clear();
                     Console.WriteLine(e.Message);
                 }
 

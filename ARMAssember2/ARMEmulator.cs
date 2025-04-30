@@ -87,12 +87,12 @@ namespace ARMAssember2
             Console.Clear();
             string[] inst;
             int xpos, index;
-            
+            ConsoleDrawing kbdraw;
 
             if (rawInstructions!= null)
             {
                 inst = rawInstructions;
-                ConsoleDrawing kbdraw = new ConsoleDrawing(new string[] { "Backspace + Space + Arrows - Self explainatory", "Esc - Exit and dont save ", "Tab - Exit and save", "F1 - Caps lock" }, keyBindsXIndex, 1, "KEYBINDS:", ConsoleColor.Yellow);
+                kbdraw = new ConsoleDrawing(new string[] { "Backspace + Space + Arrows - Self explainatory", "Esc - Exit and dont save ", "Tab - Exit and save", "F1 - Caps lock" }, keyBindsXIndex, 1, "KEYBINDS:", ConsoleColor.Yellow);
                 kbdraw.Draw();
                 Console.SetCursorPosition(0, 0);
                 foreach (string s in inst)
@@ -108,7 +108,7 @@ namespace ARMAssember2
                 inst = new string[1];
                 xpos = 0;
                 index = 0;
-                ConsoleDrawing kbdraw = new ConsoleDrawing(new string[] { "Backspace + Space + Arrows + Delete - Self explainatory", "Esc - Exit and dont save ", "Tab - Exit and save", "F1 - Caps lock" }, 60, 1, "KEYBINDS:", ConsoleColor.Yellow);
+                kbdraw = new ConsoleDrawing(new string[] { "Backspace + Space + Arrows + Delete - Self explainatory", "Esc - Exit and dont save ", "Tab - Exit and save", "F1 - Caps lock" }, 60, 1, "KEYBINDS:", ConsoleColor.Yellow);
                 kbdraw.Draw();
                 Console.SetCursorPosition(xpos, index);
             }
@@ -294,7 +294,26 @@ namespace ARMAssember2
                 }
                 else if (key == ConsoleKey.Enter)
                 {
-
+                    string[] temp = new string[inst.Length+1];
+                    for(int i = 0; i <= index; i++)
+                    {
+                        temp[i] = inst[i];
+                    }
+                    temp[index + 1] = "";
+                    for(int i = index + 2; i < temp.Length; i++)
+                    {
+                        temp[i] = inst[i - 1];
+                    }
+                    Console.Clear();
+                    foreach (string s in temp)
+                    {
+                        Console.WriteLine(s);
+                    }
+                    kbdraw.Draw();
+                    xpos = 0;
+                    index++;
+                    Console.SetCursorPosition (xpos, index);
+                    inst = temp;    
                 }
                 else
                 {
