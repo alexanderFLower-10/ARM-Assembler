@@ -321,23 +321,23 @@ namespace ARMAssember2
                     {
                         if (caps)
                         {
-                            inst[index] = inst[index].Substring(0, xpos) + key.ToString() + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+                            inst[index] = inst[index].Substring(0, xpos) + key.ToString().Substring(0, 1) + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
                         }
                         else
                         {
-                            inst[index] = inst[index].Substring(0, xpos) + key.ToString().ToLower() + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+                            inst[index] = inst[index].Substring(0, xpos) + key.ToString().ToLower().Substring(0, 1) + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
                         }
                     }
                     else
                     {
                         if (caps)
                         {
-                            inst[index] = key.ToString();
+                            inst[index] = key.ToString().Substring(0, 1);
 
                         }
                         else
                         {
-                            inst[index] = key.ToString().ToLower();
+                            inst[index] = key.ToString().ToLower().Substring(0, 1);
                         }
                     }
 

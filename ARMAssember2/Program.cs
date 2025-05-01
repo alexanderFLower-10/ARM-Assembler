@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -11,6 +13,8 @@ namespace ARMAssember2
         static Random rn = new Random();
         static void Main(string[] args)
         {
+
+
             Console.WriteLine("Please enter fullscreen and click enter to continue");
             Console.ReadLine();
             Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -174,7 +178,7 @@ namespace ARMAssember2
 
         static void EnterIDE()
         {
-            var fileinfo = getRawFile("    ______      __               _____ __                                         ____              __      __  _           \r\n   / ____/___  / /____  _____   / __(_) /__  ____  ____ _____ ___  ___     ____  / __/  _________  / /_  __/ /_(_)___  ____ \r\n  / __/ / __ \\/ __/ _ \\/ ___/  / /_/ / / _ \\/ __ \\/ __ `/ __ `__ \\/ _ \\   / __ \\/ /_   / ___/ __ \\/ / / / / __/ / __ \\/ __ \\\r\n / /___/ / / / /_/  __/ /     / __/ / /  __/ / / / /_/ / / / / / /  __/  / /_/ / __/  (__  ) /_/ / / /_/ / /_/ / /_/ / / / /\r\n/_____/_/ /_/\\__/\\___/_/     /_/ /_/_/\\___/_/ /_/\\__,_/_/ /_/ /_/\\___/   \\____/_/    /____/\\____/_/\\__,_/\\__/_/\\____/_/ /_/ \r\n                                                                                                                            \n\n\n Or press enter to create a new file");
+            var fileinfo = getRawFile();
             string[] rawInstructions = fileinfo.Item1;
             string filename = fileinfo.Item2;
             ARMEmulator ARM = new ARMEmulator(null, null, null);
@@ -257,34 +261,69 @@ namespace ARMAssember2
             Console.Clear();
             return result;
         }
-        static Tuple<string[], string> getRawFile(string message = "    ____  __                                   __               _____ __                                 \r\n   / __ \\/ /__  ____ _________     ___  ____  / /____  _____   / __(_) /__  ____  ____ _____ ___  ___  _ \r\n  / /_/ / / _ \\/ __ `/ ___/ _ \\   / _ \\/ __ \\/ __/ _ \\/ ___/  / /_/ / / _ \\/ __ \\/ __ `/ __ `__ \\/ _ \\(_)\r\n / ____/ /  __/ /_/ (__  )  __/  /  __/ / / / /_/  __/ /     / __/ / /  __/ / / / /_/ / / / / / /  __/   \r\n/_/   /_/\\___/\\__,_/____/\\___/   \\___/_/ /_/\\__/\\___/_/     /_/ /_/_/\\___/_/ /_/\\__,_/_/ /_/ /_/\\___(_)  \r\n                                                                                                         ")
+        static Tuple<string[], string> getRawFile()
         {
             // Gets filename from user
             Console.Clear();
             string[] res;
             string filepath;
+            DirectoryInfo d  = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            FileInfo[] filesasm = d.GetFiles("*.asm");
+            FileInfo[] filestxt = d.GetFiles("*.txt");
+            FileInfo[] combinedfiles = filesasm.Concat(filestxt).ToArray();
+            string[] fileNames = new string[combinedfiles.Length+1];
+            for(int i = 0; i < combinedfiles.Length; i++)
+            {
+                fileNames[i] = combinedfiles[i].Name;
+            }
+            fileNames[combinedfiles.Length] = "NewFile";
+            int index = menuHandler("Choose a file:", fileNames);
+            filepath = fileNames[index];
+            res = File.ReadAllLines(filepath);
+            return Tuple.Create(res, filepath);
+
+        }
+        static int menuHandler(string desc, string[] choices)
+        {
+            Console.CursorVisible = false;
+            int temp = 0;
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine(desc);
+            Console.ForegroundColor = ConsoleColor.Gray;
+            for (int i = 1; i < choices.Length + 1; i++)
+            {
+                Console.SetCursorPosition(1, i);
+                Console.WriteLine(choices[i - 1]);
+            }
+            int pointer = 1;
             while (true)
             {
-                Console.WriteLine(message);
-                filepath = Console.ReadLine();
-                if(filepath == "")
+                temp = pointer;
+                Console.SetCursorPosition(0, pointer);
+                Console.Write(">");
+                ConsoleKey input = Console.ReadKey(true).Key;
+                if (input == ConsoleKey.Enter)
                 {
-                    return Tuple.Create(new string[0], "NewFile");
+                    Console.Clear(); return pointer - 1;
                 }
-                try
+                else if (input == ConsoleKey.Escape) { Console.Clear(); return -1; }
+                else if (input == ConsoleKey.UpArrow)
                 {
-                    res = File.ReadAllLines(filepath);
-                    break;
+                    if (pointer == 1) pointer = choices.Length;
+                    else pointer--;
                 }
-                catch (FileNotFoundException)
+                else
                 {
-                    Console.WriteLine($"Error reading file {filepath}, please ensure it is in your debug folder and retry, either exit or press any key to retry");
-                    Console.ReadKey(true);
-                    Console.Clear();
-
+                    if (input == ConsoleKey.DownArrow)
+                    {
+                        if (pointer == choices.Length) pointer = 1;
+                        else pointer++;
+                    }
                 }
+                Console.SetCursorPosition(0, temp);
+                Console.Write(" ");
             }
-            return Tuple.Create(res, filepath);
         }
         static List<Instruction> getInstListSafe(string[] insts)
         {
@@ -571,7 +610,7 @@ namespace ARMAssember2
         static void attemptOtherChallenge(int num, string diff)
         {
 
-            var fileinfo = getRawFile("    ______      __               _____ __                                         ____              __      __  _           \r\n   / ____/___  / /____  _____   / __(_) /__  ____  ____ _____ ___  ___     ____  / __/  _________  / /_  __/ /_(_)___  ____ \r\n  / __/ / __ \\/ __/ _ \\/ ___/  / /_/ / / _ \\/ __ \\/ __ `/ __ `__ \\/ _ \\   / __ \\/ /_   / ___/ __ \\/ / / / / __/ / __ \\/ __ \\\r\n / /___/ / / / /_/  __/ /     / __/ / /  __/ / / / /_/ / / / / / /  __/  / /_/ / __/  (__  ) /_/ / / /_/ / /_/ / /_/ / / / /\r\n/_____/_/ /_/\\__/\\___/_/     /_/ /_/_/\\___/_/ /_/\\__,_/_/ /_/ /_/\\___/   \\____/_/    /____/\\____/_/\\__,_/\\__/_/\\____/_/ /_/ \r\n                                                                                                                            ");
+            var fileinfo = getRawFile();
             string[] rawInstructions = fileinfo.Item1;
             string filename = fileinfo.Item2;
             var instructons = getInstList(rawInstructions);
