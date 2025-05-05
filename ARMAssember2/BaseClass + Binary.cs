@@ -12,6 +12,10 @@ namespace ARMAssember2
     public class Instruction
     {
     }
+    public class WhiteSpace :  Instruction
+    {
+        public WhiteSpace() { }
+    }
     public class HALT : Instruction
     {
         public HALT() { }   

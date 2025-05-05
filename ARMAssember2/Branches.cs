@@ -24,13 +24,26 @@ namespace ARMAssember2
         private int Rn;
         private int operand2;
         private string addresingType;
+        private string originalOperand2;
         public CompareInst(int Rn, string operand2)
         {
+            originalOperand2 = operand2;
             this.Rn = Rn;
             var tuple = getAddresingType(operand2);
             addresingType = tuple.Item1;
             this.operand2 = tuple.Item2;
         }
+        public void setOperand2(int val)
+        {
+            operand2 = val;
+        }
+
+        public CompareInst clone()
+        {
+            return new CompareInst(Rn, originalOperand2);
+        }
+
+        public string getAddressingType() { return addresingType; }
         public int getRn() { return Rn; }   
         public int getOperand2() { return operand2; }   
         private Tuple<string, int> getAddresingType(string operand2)

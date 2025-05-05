@@ -33,7 +33,21 @@ namespace ARMAssember2
                 }
                 else if (choice == "I")
                 {
-                    EnterIDE();
+                    var tup = getRawFile();
+                    // if file has not already been modified due to it being a new file created
+                    if (!tup.Item3)
+                    {
+                        string[] newCode = enterIDE(tup.Item1);
+                        FileStream stream = new FileStream(tup.Item2 + ".asm", FileMode.CreateNew);
+                        using (StreamWriter sr = new StreamWriter(stream))
+                        {
+                            for (int i = 0; i < newCode.Length; i++)
+                            {
+                                sr.WriteLine(newCode[i]);
+                            }
+                        }
+                        
+                    }
                 }
             }
 
@@ -151,10 +165,9 @@ namespace ARMAssember2
                     }
                     else if (key == ConsoleKey.I)
                     {
-                        string[] modified = ARM.enterIDE();
-                        ARM = new ARMEmulator(getInstListSafe(modified), modified, ARM.getFilePath());
+                        string[] rawInst = enterIDE(ARM.getRawInst());
                         Console.Clear();
-                        ARM.displayGUI();
+                        ARM = new ARMEmulator( getInstListSafe(rawInst),rawInst, ARM.getFilePath());
                     }
                 }
                 catch (Exception e)
@@ -168,52 +181,311 @@ namespace ARMAssember2
 
             }
         }
-
-        static void EnterIDE()
+        static string[] enterIDE(string[] rawInstructions)
         {
-            var fileinfo = getRawFile();
-            if (fileinfo.Item2 == "")
-            {
-                return;
-            }
-            string[] rawInstructions = fileinfo.Item1;
-            string filename = fileinfo.Item2;
-            ARMEmulator ARM = new ARMEmulator(null, null, null);
-            if (filename == "NewFile")
-            {
-                ARM = new ARMEmulator(null, null, null);
-            }
-            else
-            {
-                ARM = new ARMEmulator(null, rawInstructions, null);
-            }
-            string[] newRawInst = ARM.enterIDE();
-
-            if (filename == "NewFile")
-            {
-                Console.Clear();
-                Console.WriteLine("Enter desired filename to store this under (without filename extension)");
-                FileStream fs = new FileStream(Console.ReadLine() + ".asm", FileMode.Create);
-                using (StreamWriter sw = new StreamWriter(fs))
-                {
-                    foreach (string s in newRawInst)
-                    {
-                        sw.WriteLine(s);
-                    }
-                }
-            }
-            else
-            {
-                Console.Clear();
-                using (StreamWriter sw = new StreamWriter(filename, false))
-                {
-                    foreach (string s in newRawInst)
-                    {
-                        sw.WriteLine(s);
-                    }
-                }
-            }
+            Console.CursorVisible = true;
+            Console.ForegroundColor = ConsoleColor.Gray;
             Console.Clear();
+            string[] inst;
+            int xpos, index;
+            ConsoleDrawing kbdraw = new ConsoleDrawing(new string[] { "Backspace + Space + Arrows + Delete - Self explainatory", "Esc - Exit and dont save ", "Tab - Exit and save", "F1 - Caps lock" }, 60, 1, "KEYBINDS:", ConsoleColor.Yellow);
+            kbdraw.Draw();
+
+            if (rawInstructions != null)
+            {
+                inst = rawInstructions;
+                Console.SetCursorPosition(0, 0);
+                foreach (string s in inst)
+                {
+                    Console.WriteLine(s);
+                }
+                index = inst.Length - 1;
+                xpos = inst[inst.Length - 1].Length;
+                Console.SetCursorPosition(xpos, index);
+            }
+            else
+            {
+                inst = new string[1];
+                xpos = 0;
+                index = 0;
+                Console.SetCursorPosition(xpos, index);
+            }
+
+
+            bool caps = false;
+            while (true)
+            {
+                ConsoleKey key = Console.ReadKey(true).Key;
+                if (key == ConsoleKey.DownArrow)
+                {
+                    if (index < inst.Length - 1)
+                    {
+                        index++;
+                        if (xpos >= inst[index].Length)
+                        {
+                            Console.SetCursorPosition(inst[index].Length, index);
+                            xpos = inst[index].Length;
+                        }
+                        else
+                        {
+                            Console.SetCursorPosition(xpos, index);
+                        }
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.UpArrow)
+                {
+                    if (index > 0)
+                    {
+                        index--;
+                        if (xpos >= inst[index].Length)
+                        {
+                            Console.SetCursorPosition(inst[index].Length, index);
+                            xpos = inst[index].Length;
+                        }
+                        else
+                        {
+                            Console.SetCursorPosition(xpos, index);
+                        }
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.LeftArrow)
+                {
+                    if (Console.CursorLeft - 1 >= 0)
+                    {
+                        xpos--;
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.RightArrow)
+                {
+                    if (!(Console.CursorLeft + 1 > inst[index].Length))
+                    {
+                        xpos++;
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.Spacebar)
+                {
+                    if (inst[index] != null)
+                    {
+                        inst[index] = inst[index].Substring(0, xpos) + " " + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+                    }
+                    else
+                    {
+                        inst[index] = " ";
+                    }
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+                else if (key == ConsoleKey.Backspace)
+                {
+                    if (xpos != 0)
+                    {
+                        inst[index] = inst[index].Substring(0, xpos - 1) + inst[index].Substring(xpos);
+                        Console.SetCursorPosition(0, index);
+                        Console.Write(inst[index] + " ");
+                        xpos--;
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.D1 || key == ConsoleKey.D2 || key == ConsoleKey.D3 || key == ConsoleKey.D4 || key == ConsoleKey.D5 || key == ConsoleKey.D6 || key == ConsoleKey.D7 || key == ConsoleKey.D8 || key == ConsoleKey.D9 || key == ConsoleKey.D0)
+                {
+                    if (inst[index] != null)
+                    {
+
+                        inst[index] = inst[index].Substring(0, xpos) + key.ToString().Substring(1) + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+
+                    }
+                    else
+                    {
+                        inst[index] = key.ToString().Substring(1);
+                    }
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+                else if (key == ConsoleKey.OemComma)
+                {
+                    if (inst[index] != null)
+                    {
+
+                        inst[index] = inst[index].Substring(0, xpos) + "," + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+
+                    }
+                    else
+                    {
+                        inst[index] = ",";
+                    }
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+                else if (key == ConsoleKey.Oem7)
+                {
+                    if (inst[index] != null)
+                    {
+
+                        inst[index] = inst[index].Substring(0, xpos) + "#" + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+
+                    }
+                    else
+                    {
+                        inst[index] = "#";
+                    }
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+                else if (key == ConsoleKey.Oem1)
+                {
+                    if (inst[index] != null)
+                    {
+
+                        inst[index] = inst[index].Substring(0, xpos) + ":" + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+
+                    }
+                    else
+                    {
+                        inst[index] = ":";
+                    }
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+                else if (key == ConsoleKey.F1)
+                {
+                    if (caps) caps = false;
+                    else caps = true;
+                }
+                else if (key == ConsoleKey.Delete)
+                {
+                    if (xpos != inst[index].Length)
+                    {
+                        inst[index] = inst[index].Substring(0, xpos) + inst[index].Substring(xpos + 1);
+                        Console.SetCursorPosition(0, index);
+                        Console.Write(inst[index] + " ");
+                        Console.SetCursorPosition(xpos, index);
+                    }
+                }
+                else if (key == ConsoleKey.Escape)
+                {
+                    Console.CursorVisible = false;
+                    return rawInstructions;
+                }
+                else if (key == ConsoleKey.Tab)
+                {
+                    Console.CursorVisible = false;
+                    return inst;
+                }
+                else if (key == ConsoleKey.Enter)
+                {
+                    string[] temp = new string[inst.Length + 1];
+                    for (int i = 0; i <= index; i++)
+                    {
+                        temp[i] = inst[i];
+                    }
+                    temp[index + 1] = "";
+                    for (int i = index + 2; i < temp.Length; i++)
+                    {
+                        temp[i] = inst[i - 1];
+                    }
+                    Console.Clear();
+                    foreach (string s in temp)
+                    {
+                        Console.WriteLine(s);
+                    }
+                    kbdraw.Draw();
+                    xpos = 0;
+                    index++;
+                    Console.SetCursorPosition(xpos, index);
+                    inst = temp;
+                }
+                else
+                {
+                    if (inst[index] != null)
+                    {
+                        if (caps)
+                        {
+                            inst[index] = inst[index].Substring(0, xpos) + key.ToString().Substring(0, 1) + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+                        }
+                        else
+                        {
+                            inst[index] = inst[index].Substring(0, xpos) + key.ToString().ToLower().Substring(0, 1) + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+                        }
+                    }
+                    else
+                    {
+                        if (caps)
+                        {
+                            inst[index] = key.ToString().Substring(0, 1);
+
+                        }
+                        else
+                        {
+                            inst[index] = key.ToString().ToLower().Substring(0, 1);
+                        }
+                    }
+
+
+                    Console.SetCursorPosition(0, index);
+                    Console.Write(inst[index]);
+                    xpos++;
+                    Console.SetCursorPosition(xpos, index);
+                }
+            }
+        }
+        static Tuple<string[], string, bool> getRawFile()
+        {
+            // Gets filename from user
+            Console.Clear();
+            string[] res;
+            string filepath;
+            DirectoryInfo d = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            FileInfo[] filesasm = d.GetFiles("*.asm");
+            FileInfo[] filestxt = d.GetFiles("*.txt");
+            FileInfo[] combinedfiles = filesasm.Concat(filestxt).ToArray();
+            string[] fileNames = new string[combinedfiles.Length + 1];
+            for (int i = 0; i < combinedfiles.Length; i++)
+            {
+                fileNames[i] = combinedfiles[i].Name;
+            }
+            fileNames[combinedfiles.Length] = "NewFile";
+            int index = menuHandler("Choose a file:", fileNames);
+            string[] anti = new string[0];
+            if (index == -1) return Tuple.Create(anti, "", true);
+            filepath = fileNames[index];
+            if (filepath == "NewFile")
+            {
+                string[] newCode = enterIDE(null);
+                Console.Clear();
+                Console.WriteLine("Enter name to store file under (without filename extension)");
+                string filename = Console.ReadLine();
+                FileStream stream = new FileStream(filename + ".asm", FileMode.CreateNew);
+                using (StreamWriter sr = new StreamWriter(stream))
+                {
+                    for(int i = 0; i < newCode.Length; i++)
+                    {
+                        sr.WriteLine(newCode[i]);
+                    }
+                }
+                return Tuple.Create(newCode, filename, true);
+            }
+            res = File.ReadAllLines(filepath);
+            return Tuple.Create(res, filepath, false);
+
         }
         // All loading a program subroutines ↓↓↓
         static ARMEmulator LoadProgram()
@@ -262,34 +534,6 @@ namespace ARMAssember2
             }
             Console.Clear();
             return result;
-        }
-        static Tuple<string[], string> getRawFile()
-        {
-            // Gets filename from user
-            Console.Clear();
-            string[] res;
-            string filepath;
-            DirectoryInfo d = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-            FileInfo[] filesasm = d.GetFiles("*.asm");
-            FileInfo[] filestxt = d.GetFiles("*.txt");
-            FileInfo[] combinedfiles = filesasm.Concat(filestxt).ToArray();
-            string[] fileNames = new string[combinedfiles.Length + 1];
-            for (int i = 0; i < combinedfiles.Length; i++)
-            {
-                fileNames[i] = combinedfiles[i].Name;
-            }
-            fileNames[combinedfiles.Length] = "NewFile";
-            int index = menuHandler("Choose a file:", fileNames);
-            string[] anti = new string[0];
-            if (index == -1) return Tuple.Create(anti, "");
-            filepath = fileNames[index];
-            if (filepath == "NewFile")
-            {
-                return Tuple.Create(new string[0], "NewFile");
-            }
-            res = File.ReadAllLines(filepath);
-            return Tuple.Create(res, filepath);
-
         }
         static int menuHandler(string desc, string[] choices)
         {
@@ -375,8 +619,8 @@ namespace ARMAssember2
             List<Instruction> list = new List<Instruction>();
             for (int i = 0; i < insts.Length; i++)
             {
-                if (insts[i] == "") continue;
-                if (insts[i][0] == 'B') list.Add(getBranchInst(insts[i], counter));
+                if (insts[i] == "") list.Add(new WhiteSpace());
+                else if (insts[i][0] == 'B') list.Add(getBranchInst(insts[i], counter));
                 else if (insts[i][insts[i].Length - 1] == ':' && insts[i].Trim() == insts[i])
                 {
                     string temp = insts[i].Substring(0, insts[i].Length - 1);
@@ -560,15 +804,15 @@ namespace ARMAssember2
             int challengesMadeCount = 0;
             if (diff == "E")
             {
-                challengesMadeCount = 2;
+                challengesMadeCount = 3;
             }
             else if (diff == "M")
             {
-                challengesMadeCount = 1;
+                challengesMadeCount = 3;
             }
             else if (diff == "H")
             {
-                challengesMadeCount = 1;
+                challengesMadeCount = 3;
             }
             printOtherChallengeNum(1, diff);
             writePageNum(1, challengesMadeCount);
@@ -621,10 +865,6 @@ namespace ARMAssember2
                 {
                     return;
                 }
-                else if (fileinfo.Item2 == "NewFile")
-                {
-                    EnterIDE();
-                }
                 else
                 {
                     break;
@@ -645,6 +885,10 @@ namespace ARMAssember2
                 if (num == 2)
                 {
                     attemptE2(userprogram);
+                }
+                if (num == 3)
+                {
+                    attemptE3(userprogram);
                 }
             }
             else if (diff == "M")
@@ -915,6 +1159,42 @@ namespace ARMAssember2
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.ReadLine();
         }
+
+        static void attemptE3(ARMEmulator userProgram)
+        {
+            ARMEmulator solution = getSolution(3, "E");
+            Console.ForegroundColor = ConsoleColor.Green;
+            for (int i = 0; i < 1000; i++)
+            {
+                var cases = inputTwoValTestCases(solution, userProgram, "M1", "M2");
+                int testCaseMVal1 = cases.Item1;
+                int testCaseMVal2 = cases.Item2;
+                int requiredresult = testCase(solution, "M", 0);
+                solution.Reset();
+                int userresult = testCase(userProgram, "M", 0);
+                userProgram.Reset();
+                if (userresult != requiredresult)
+                {
+                    failTestCase($"Testcase {i + 1} FAILED: M1 = {testCaseMVal1} M2 = {testCaseMVal2} Expected M0 = {requiredresult} Your M0 = {userresult}");
+                }
+                else
+                {
+                    Console.WriteLine(twoInputPassedResultBuilder(i + 1, "M1", testCaseMVal1, "M2", testCaseMVal2, "M0", requiredresult, userresult));
+                }
+            }
+
+            Console.WriteLine("Program is valid");
+            string[] rawInst = userProgram.getRawInst();
+            for(int i = 0; i < rawInst.Length; i++)
+            {
+                if(rawInst[i].Substring(0,3) == "LSL")
+                {
+                    Console.WriteLine("EXTENSION PASSED");
+                }
+            }
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.ReadLine();
+        }
         static void failTestCase(string message)
         {
             Console.ForegroundColor = ConsoleColor.DarkRed;
@@ -980,6 +1260,10 @@ namespace ARMAssember2
                 {
                     Console.WriteLine("Vernam Cipher\r\n> A character code is stored in memory address 1\r\n> You must input the special key (the number 7) directly into a register\r\n> Then X/EOR the key with the character code and store the result in memory location 0");
                 }
+                if(num == 3)
+                {
+                    Console.WriteLine("Branches And Comparisons Introduction\r\n> I have 2 unique numbers stored in memory locations 1 and 2\r\n> Please compare the 2 and output the result of the largest one multiplied by 2\r\n> Extension: Think about what bitwise operation could multiply a number by 2\r\n> Bitwise operations are faster than adding");
+                }
             }
             else if (diff == "M")
             {
@@ -1015,6 +1299,10 @@ namespace ARMAssember2
                 if (num == 2)
                 {
                     Console.WriteLine("Required Instructions:\nLDR\nSTR\nEOR");
+                }
+                if (num == 3)
+                {
+                    Console.WriteLine("Required Instructions:\nLDR\nSTR\nCMP\nBLT/BGT\nLSL/ADD");
                 }
             }
             else if (diff == "M")
