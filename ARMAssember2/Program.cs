@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace ARMAssember2
 {
@@ -13,8 +11,6 @@ namespace ARMAssember2
         static Random rn = new Random();
         static void Main(string[] args)
         {
-
-
             Console.WriteLine("Please enter fullscreen and click enter to continue");
             Console.ReadLine();
             Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -42,15 +38,11 @@ namespace ARMAssember2
             }
 
         }
-
-
-
-
         static void displayInstructionManual()
         {
             string[] lines = File.ReadAllLines(@"Misc\manual.txt");
             Console.Clear();
-            foreach(string line in lines)
+            foreach (string line in lines)
             {
                 Console.WriteLine(line);
             }
@@ -97,6 +89,7 @@ namespace ARMAssember2
         static void loadIndividualProgram()
         {
             ARMEmulator ARM = LoadProgram();
+            if (ARM.getFilePath() == null) return;
             ARM.displayGUI();
             int xstart = (Console.WindowWidth - (Console.WindowWidth / 3) * 2);
             displayEverything(ARM);
@@ -179,6 +172,10 @@ namespace ARMAssember2
         static void EnterIDE()
         {
             var fileinfo = getRawFile();
+            if (fileinfo.Item2 == "")
+            {
+                return;
+            }
             string[] rawInstructions = fileinfo.Item1;
             string filename = fileinfo.Item2;
             ARMEmulator ARM = new ARMEmulator(null, null, null);
@@ -191,6 +188,7 @@ namespace ARMAssember2
                 ARM = new ARMEmulator(null, rawInstructions, null);
             }
             string[] newRawInst = ARM.enterIDE();
+
             if (filename == "NewFile")
             {
                 Console.Clear();
@@ -209,7 +207,7 @@ namespace ARMAssember2
                 Console.Clear();
                 using (StreamWriter sw = new StreamWriter(filename, false))
                 {
-                    foreach(string s in newRawInst)
+                    foreach (string s in newRawInst)
                     {
                         sw.WriteLine(s);
                     }
@@ -225,6 +223,10 @@ namespace ARMAssember2
             ARMEmulator result = new ARMEmulator(list, null, "");
             Console.WriteLine("LOAD PROJECT");
             var fileinfo = getRawFile();
+            if (fileinfo.Item2 == "")
+            {
+                return new ARMEmulator(null, null, null);
+            }
             string[] rawInstructions = fileinfo.Item1;
             string filepath = fileinfo.Item2;
             var instructions = getInstListSafe(rawInstructions);
@@ -252,11 +254,11 @@ namespace ARMAssember2
             }
             if (customisedMemory)
             {
-                result = new ARMEmulator(instructions, rawInstructions,filepath,  0, regCount, memCount);
+                result = new ARMEmulator(instructions, rawInstructions, filepath, 0, regCount, memCount);
             }
             if (!customisedMemory)
             {
-                result = new ARMEmulator(instructions, rawInstructions,filepath, 0);
+                result = new ARMEmulator(instructions, rawInstructions, filepath, 0);
             }
             Console.Clear();
             return result;
@@ -267,18 +269,24 @@ namespace ARMAssember2
             Console.Clear();
             string[] res;
             string filepath;
-            DirectoryInfo d  = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            DirectoryInfo d = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             FileInfo[] filesasm = d.GetFiles("*.asm");
             FileInfo[] filestxt = d.GetFiles("*.txt");
             FileInfo[] combinedfiles = filesasm.Concat(filestxt).ToArray();
-            string[] fileNames = new string[combinedfiles.Length+1];
-            for(int i = 0; i < combinedfiles.Length; i++)
+            string[] fileNames = new string[combinedfiles.Length + 1];
+            for (int i = 0; i < combinedfiles.Length; i++)
             {
                 fileNames[i] = combinedfiles[i].Name;
             }
             fileNames[combinedfiles.Length] = "NewFile";
             int index = menuHandler("Choose a file:", fileNames);
+            string[] anti = new string[0];
+            if (index == -1) return Tuple.Create(anti, "");
             filepath = fileNames[index];
+            if (filepath == "NewFile")
+            {
+                return Tuple.Create(new string[0], "NewFile");
+            }
             res = File.ReadAllLines(filepath);
             return Tuple.Create(res, filepath);
 
@@ -503,6 +511,7 @@ namespace ARMAssember2
 
 
         // All loading a program subroutines ↑↑↑ 
+
         // All viewing challenges subroutines ↓↓↓
         static void viewChallenges()
         {
@@ -563,10 +572,6 @@ namespace ARMAssember2
             }
             printOtherChallengeNum(1, diff);
             writePageNum(1, challengesMadeCount);
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine("Press a to submit a solution");
             while (true)
             {
                 ConsoleKey key = Console.ReadKey(true).Key;
@@ -579,10 +584,6 @@ namespace ARMAssember2
                         Console.Clear();
                         challengeNumDisplayed++;
                         printOtherChallengeNum(challengeNumDisplayed, diff);
-                        Console.WriteLine();
-                        Console.WriteLine();
-                        Console.WriteLine();
-                        Console.WriteLine("Press a to submit a solution");
                     }
                 }
                 else if (key == ConsoleKey.LeftArrow)
@@ -592,17 +593,20 @@ namespace ARMAssember2
                         Console.Clear();
                         challengeNumDisplayed--;
                         printOtherChallengeNum(challengeNumDisplayed, diff);
-                        Console.WriteLine();
-                        Console.WriteLine();
-                        Console.WriteLine();
-                        Console.WriteLine("Press a to submit a solution");
                     }
                 }
                 else if (key == ConsoleKey.A)
                 {
                     attemptOtherChallenge(challengeNumDisplayed, diff);
+
                 }
+                else if (key == ConsoleKey.R)
+                {
+                    printOtherChallengeInstUse(challengeNumDisplayed, diff);
+                }
+
                 writePageNum(challengeNumDisplayed, challengesMadeCount);
+
             }
 
         }
@@ -611,6 +615,22 @@ namespace ARMAssember2
         {
 
             var fileinfo = getRawFile();
+            while (true)
+            {
+                if (fileinfo.Item2 == "")
+                {
+                    return;
+                }
+                else if (fileinfo.Item2 == "NewFile")
+                {
+                    EnterIDE();
+                }
+                else
+                {
+                    break;
+                }
+            }
+
             string[] rawInstructions = fileinfo.Item1;
             string filename = fileinfo.Item2;
             var instructons = getInstList(rawInstructions);
@@ -621,6 +641,17 @@ namespace ARMAssember2
                 if (num == 1)
                 {
                     attemptE1(userprogram);
+                }
+                if (num == 2)
+                {
+                    attemptE2(userprogram);
+                }
+            }
+            else if (diff == "M")
+            {
+                if (num == 1)
+                {
+                    attemptM1(userprogram);
                 }
             }
         }
@@ -692,13 +723,13 @@ namespace ARMAssember2
             {
                 result += " ";
             }
-            return result ;
+            return result;
         }
 
         static Tuple<int, int> inputTwoValTestCases(ARMEmulator sol, ARMEmulator user, string loc1, string loc2)
         {
 
-             if (loc1[0] == 'M')
+            if (loc1[0] == 'M')
             {
                 int addy1 = Convert.ToInt32(loc1.Substring(1));
                 int testcase1 = rn.Next(1, 10000);
@@ -709,7 +740,7 @@ namespace ARMAssember2
                 int testcase2 = rn.Next(1, 10000);
                 sol.SetMemoryVal(addy2, testcase2);
                 user.SetMemoryVal(addy2, testcase2);
-                return Tuple.Create(testcase1 , testcase2);
+                return Tuple.Create(testcase1, testcase2);
             }
             else if (loc1[0] == 'R')
             {
@@ -726,9 +757,58 @@ namespace ARMAssember2
             }
             else throw new Exception();
         }
+
+        static int inputOneValTestCases(ARMEmulator sol, ARMEmulator user, string loc1)
+        {
+            if (loc1[0] == 'M')
+            {
+                int addy1 = Convert.ToInt32(loc1.Substring(1));
+                int testcase1 = rn.Next(1, 10000);
+                sol.SetMemoryVal(addy1, testcase1);
+                user.SetMemoryVal(addy1, testcase1);
+                return testcase1;
+
+            }
+            else if (loc1[0] == 'R')
+            {
+                int addy1 = Convert.ToInt32(loc1.Substring(1));
+                int testcase1 = rn.Next(1, 10000);
+                sol.SetMemoryVal(addy1, testcase1);
+                user.SetMemoryVal(addy1, testcase1);
+                return testcase1;
+            }
+            else throw new Exception();
+        }
+
+        static string oneInputPassedResultBuilder(int testCaseNum, string case1Loc, int case1Val, string resultLocation, int requiredresult, int userresult)
+        {
+            string result = $"Testcase {testCaseNum}";
+            for (int j = testCaseNum.ToString().Length; j < 5; j++)
+            {
+                result += " ";
+            }
+            result += $"PASSED: {case1Loc} = {case1Val}";
+            for (int j = case1Val.ToString().Length; j < 5; j++)
+            {
+                result += " ";
+            }
+            result += $" Expected {resultLocation} = {requiredresult}";
+            for (int j = requiredresult.ToString().Length; j < 5; j++)
+            {
+                result += " ";
+            }
+            result += $" Your {resultLocation} = ";
+            result += userresult.ToString();
+            for (int j = requiredresult.ToString().Length; j < 5; j++)
+            {
+                result += " ";
+            }
+            return result;
+        }
         static void attemptE1(ARMEmulator userProgram)
         {
             ARMEmulator solution = getSolution(1, "E");
+            Console.ForegroundColor = ConsoleColor.Green;
             for (int i = 0; i < 1000; i++)
             {
                 var cases = inputTwoValTestCases(solution, userProgram, "M1", "M2");
@@ -741,26 +821,103 @@ namespace ARMAssember2
                 if (userresult != requiredresult)
                 {
                     failTestCase($"Testcase {i + 1} FAILED: M1 = {testCaseMVal1} M2 = {testCaseMVal2} Expected M0 = {requiredresult} Your M0 = {userresult}");
-                    Console.WriteLine("Press any key to exit");
-                    Console.ReadKey(true);
-                    Environment.Exit(0);
                 }
                 else
                 {
-                    Console.WriteLine(twoInputPassedResultBuilder(i+1, "M1", testCaseMVal1, "M2", testCaseMVal2, "M0", requiredresult, userresult));
+                    Console.WriteLine(twoInputPassedResultBuilder(i + 1, "M1", testCaseMVal1, "M2", testCaseMVal2, "M0", requiredresult, userresult));
                 }
             }
+
             Console.WriteLine("Program is valid");
+            Console.ForegroundColor = ConsoleColor.Gray;
             Console.ReadLine();
         }
 
         static void attemptE2(ARMEmulator userProgram)
         {
+            string[] rawInst = userProgram.getRawInst();
+            bool mov = false;
+            foreach (string s in rawInst)
+            {
+                if (s.Substring(0, 3).ToUpper() == "MOV")
+                {
+                    mov = true; break;
+                }
+            }
+            if (!mov)
+            {
+                Console.WriteLine("FAILED: You have not directly inputted the key into a register");
+                Console.WriteLine("Press h to display a hint or enter to continue");
+                ConsoleKey key = Console.ReadKey(true).Key;
+                if (key == ConsoleKey.H)
+                {
+                    Console.WriteLine("HINT: Look at the instruction MOV on the AQA Instruction Set");
+                    Console.WriteLine("Press any key to continue");
+                    Console.ReadKey();
+                    Console.Clear();
+                    return;
 
+                }
+                else
+                {
+                    Console.Clear();
+                    return;
+                }
+            }
+            ARMEmulator solution = getSolution(2, "E");
+            Console.ForegroundColor = ConsoleColor.Green;
+            for (int i = 0; i < 1000; i++)
+            {
+                int testCaseMVal1 = inputOneValTestCases(solution, userProgram, "M1");
+                int requiredresult = testCase(solution, "M", 0);
+                solution.Reset();
+                int userresult = testCase(userProgram, "M", 0);
+                userProgram.Reset();
+
+
+                if (userresult != requiredresult)
+                {
+                    failTestCase($"Testcase {i + 1} FAILED: M1 = {testCaseMVal1} Expected M0 = {requiredresult} Your M0 = {userresult}");
+                }
+                else
+                {
+                    Console.WriteLine(oneInputPassedResultBuilder(i + 1, "M1", testCaseMVal1, "M0", requiredresult, userresult));
+                }
+            }
+            Console.WriteLine("Program is valid");
+            Console.ReadLine();
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
+        static void attemptM1(ARMEmulator userProgram)
+        {
+            ARMEmulator solution = getSolution(1, "M");
+            Console.ForegroundColor = ConsoleColor.Green;
+            for (int i = 0; i < 1000; i++)
+            {
+                var cases = inputTwoValTestCases(solution, userProgram, "M1", "M2");
+                int testCaseMVal1 = cases.Item1;
+                int testCaseMVal2 = cases.Item2;
+                int requiredresult = testCase(solution, "M", 0);
+                solution.Reset();
+                int userresult = testCase(userProgram, "M", 0);
+                userProgram.Reset();
+                if (userresult != requiredresult)
+                {
+                    failTestCase($"Testcase {i + 1} FAILED: M1 = {testCaseMVal1} M2 = {testCaseMVal2} Expected M0 = {requiredresult} Your M0 = {userresult}");
+                }
+                else
+                {
+                    Console.WriteLine(twoInputPassedResultBuilder(i + 1, "M1", testCaseMVal1, "M2", testCaseMVal2, "M0", requiredresult, userresult));
+                }
+            }
 
+            Console.WriteLine("Program is valid");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.ReadLine();
+        }
         static void failTestCase(string message)
         {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             Console.WriteLine("Press any key to exit");
             Console.ReadKey(true);
             Environment.Exit(0);
@@ -828,7 +985,7 @@ namespace ARMAssember2
             {
                 if (num == 1)
                 {
-                    Console.WriteLine("Logic gates\r\n> Value A is stored in memory address 1\r\n> value B is stored in memory address 2\r\n> Carry out the following operation and store the result in memory address 0\r\n> NOT( A \u2022 B \u2022 A + B) ");
+                    Console.WriteLine("Logic gates\r\n> Value A is stored in memory address 1\r\n> Value B is stored in memory address 2\r\n> Carry out the following operation and store the result in memory address 0\r\n> NOT( (A \u2022 B) \u2022 (A + B)) ");
                 }
             }
             else if (diff == "H")
@@ -838,14 +995,54 @@ namespace ARMAssember2
                     Console.WriteLine("ADDTOWNS PT 2\r\n> n values are stored in memory address locations 1,2 … ,n\r\n> The number n is stored in memory location 0\r\n> Using indirect addressing (more info in manual at start) add all of these values\r\n> Store the result of the operation in Register 0\r\n");
                 }
             }
+            Console.WriteLine("Press r to view required instruction usage for this questions");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Press a to submit a solution");
+
+        }
+        static void printOtherChallengeInstUse(int num, string diff)
+        {
+            Console.SetCursorPosition(100, 0);
+            if (diff == "E")
+            {
+                if (num == 1)
+                {
+
+                    Console.WriteLine("Required Instructions:\nLDR\nSTR\nADD");
+                }
+                if (num == 2)
+                {
+                    Console.WriteLine("Required Instructions:\nLDR\nSTR\nEOR");
+                }
+            }
+            else if (diff == "M")
+            {
+                if (num == 1)
+                {
+                    Console.WriteLine("Required Instructions:\nLDR\nSTR\nAND\nORR\nMVN");
+                }
+
+            }
+            else if (diff == "H")
+            {
+                if (num == 1)
+                {
+                }
+            }
+
 
         }
 
         static void writePageNum(int num, int cap)
         {
+            int cursortop = Console.CursorTop;
+            int cursorwidth = Console.CursorLeft;
             int length = num.ToString().Length + cap.ToString().Length + 1 + "Challenge: ".Length;
             Console.SetCursorPosition(Console.WindowWidth - length, 0);
             Console.Write("Challenge: " + num + "/" + cap);
+            Console.SetCursorPosition(cursortop, cursorwidth);
         }
 
     }

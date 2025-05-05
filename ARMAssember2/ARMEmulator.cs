@@ -1,12 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ARMAssember2
 {
@@ -27,58 +20,235 @@ namespace ARMAssember2
         int maxLines;
         private int largestStorage;
         private string filepath;
-        public ARMEmulator(List<Instruction> instructions, string[] rawInstructions, string filepath, int PC = 0, int RegistersCap = 16, int MemoryCap = 16 )
+        public ARMEmulator(List<Instruction> instructions, string[] rawInstructions, string filepath, int PC = 0, int RegistersCap = 16, int MemoryCap = 16)
         {
             this.filepath = filepath;
-            List<Instruction> tempInstList = new List<Instruction> ();
-            if(instructions!= null)
-                
+            this.rawInstructions = rawInstructions;
+            if (instructions != null && rawInstructions != null)
+
             {
-                this.instructions = instructions;
-                for (int i = 0; i < instructions.Count; i++)
-                {
-                    tempInstList.Add(instructions[i]);
-                }
-                Registers = new int[RegistersCap];
-                Memory = new int[MemoryCap];
-                this.PC = PC;
-                this.instructions = instructions;
-                labelsLocations = new Dictionary<string, int>();
-                SR = "N/A";
-                for (int i = 0; i < instructions.Count; i++)
-                {
-                    if (instructions[i].GetType() == typeof(Label))
-                    {
-                        Label temp = (Label)instructions[i];
-                        string labelname = temp.getLabel();
-                        if (!labelsLocations.ContainsKey(labelname))
-                        {
-                            labelsLocations.Add(labelname, i);
-                        }
-                        else throw new Exception("Label name in use");
-                    }
-                }
+                realInitialisation(instructions, rawInstructions, filepath, PC, RegistersCap, MemoryCap) ;
             }
 
-            this.rawInstructions = rawInstructions;
-            if(rawInstructions != null)
-            {
-                DrawInstructions = new ConsoleDrawing(rawInstructions, 35, 1, "ASSEMBLY PROGRAM:", ConsoleColor.Blue);
-                int max = 0;
-                for (int i = 0; i < rawInstructions.Length; i++)
-                {
-                    if (rawInstructions[i].Length > max) max = rawInstructions[i].Length;
-                }
-                keyBindsXIndex = max + 41;
-                keybinds = buildsKeyBinds();
-                maxLines = rawInstructions.Length - 1;
-                if (Memory.Length > Registers.Length) largestStorage = Memory.Length;
-                else largestStorage = Registers.Length;
-            }
 
         }
 
+        private void realInitialisation(List<Instruction> instructions, string[] rawInstructions, string filepath, int PC, int RegistersCap, int MemoryCap)
+        {
+            // only called when rawinst and inst are not null as may need to make a skeleton for entering ide
+            this.instructions = instructions;
+            Registers = new int[RegistersCap];
+            Memory = new int[MemoryCap];
+            this.PC = PC;
+            this.instructions = instructions;
+            labelsLocations = new Dictionary<string, int>();
+            SR = "N/A";
+            // declare deafult values for SR, create memory and registers etc
+            for (int i = 0; i < instructions.Count; i++)
+            {
+                if (instructions[i].GetType() == typeof(Label))
+                {
+                    Label temp = (Label)instructions[i];
+                    string labelname = temp.getLabel();
+                    if (!labelsLocations.ContainsKey(labelname))
+                    {
+                        labelsLocations.Add(labelname, i);
+                    }
+                    else throw new Exception("Label name in use");
+                }
+            }
+            // get the location of each label to when branching is easier
 
+            // declare variables to help with gui placement
+            DrawInstructions = new ConsoleDrawing(rawInstructions, 35, 1, "ASSEMBLY PROGRAM:", ConsoleColor.Blue);
+            int max = 0;
+            for (int i = 0; i < rawInstructions.Length; i++)
+            {
+                if (rawInstructions[i].Length > max) max = rawInstructions[i].Length;
+            }
+            keyBindsXIndex = max + 41;
+            keybinds = buildsKeyBinds();
+            maxLines = rawInstructions.Length - 1;
+            if (Memory.Length > Registers.Length) largestStorage = Memory.Length;
+            else largestStorage = Registers.Length;
+
+        }
+
+        // Functions for stepping etc
+        public void Step()
+        {
+            if (instructions[PC].GetType() == typeof(HALT))
+            {
+                HALT();
+            }
+            else if (instructions[PC].GetType() == typeof(Label))
+            {
+                // pass on labels
+            }
+            else if (instructions[PC].GetType() == typeof(ThreeParameterInst))
+            {
+                Dictionary<string, Type> ThreeParInstMap = new Dictionary<string, Type>()
+                {
+                    {"ADD", typeof(ADD) },
+                    {"SUB", typeof(SUB) },
+                    {"AND", typeof(AND) },
+                    {"ORR", typeof(ORR) },
+                    {"EOR", typeof(EOR) },
+                    {"LSL", typeof(LSL) },
+                    {"LSR", typeof(LSR) }
+                };
+                ThreeParameterInst current = (ThreeParameterInst)instructions[PC];
+                ThreeParameterInst Current = current.Clone();
+                string addressingType = Current.getAddressingType();
+                int baseOperand = Current.getOperand2();
+                string instType = Current.GetInstType();
+                if (addressingType == "im")
+                {
+                    // nothing to be done as operand 2 already set properly in constructor
+                }
+                else if (addressingType == "dr")
+                {
+                    Current.setOperand2(Registers[Current.getOperand2()]);
+                }
+                else if (addressingType == "dm")
+                {
+                    Current.setOperand2(Memory[Current.getOperand2()]);
+                }
+                else if (addressingType == "indr")
+                {
+                    Current.setOperand2(Memory[Registers[Current.getOperand2()]]);
+                }
+
+                if (ThreeParInstMap.ContainsKey(instType))
+                {
+                    ThreeParameterExecutes inst = (ThreeParameterExecutes)Activator.CreateInstance(ThreeParInstMap[instType]);
+                    inst.Execute(this, Current);
+                }
+                else
+                {
+                    throw new Exception($"You forgot to implement the inst map for the inst type {instType}");
+                }
+            }
+            else if (instructions[PC].GetType() == typeof(TwoParameterInst))
+            {
+                Dictionary<string, Type> TwoParInstMap = new Dictionary<string, Type>()
+                {
+                    {"LDR", typeof(LDR) },
+                    {"STR", typeof(STR) },
+                    {"MOV", typeof(MOV) },
+                    {"MVN", typeof(MVN) },
+                };
+                TwoParameterInst current = (TwoParameterInst)instructions[PC];
+                TwoParameterInst Current = current.Clone();
+                string addressingType = Current.getAddressingType();
+                int baseOperand = Current.getOperand2();
+                string instType = Current.GetInstType();
+                if (instType != "STR")
+                {
+                    if (addressingType == "im")
+                    {
+                        // nothing to be done as operand 2 already set properly in constructor
+                    }
+                    else if (addressingType == "dr")
+                    {
+                        Current.setOperand2(Registers[Current.getOperand2()]);
+                    }
+                    else if (addressingType == "dm")
+                    {
+                        Current.setOperand2(Memory[Current.getOperand2()]);
+                    }
+                    else if (addressingType == "indr")
+                    {
+                        Current.setOperand2(Memory[Registers[Current.getOperand2()]]);
+                    }
+                }
+
+
+
+
+
+                if (TwoParInstMap.ContainsKey(instType))
+                {
+                    TwoParameterExecutes inst = (TwoParameterExecutes)Activator.CreateInstance(TwoParInstMap[instType]);
+                    inst.Execute(this, Current);
+                }
+                else
+                {
+                    throw new Exception($"You forgot to implement the inst map for the inst type {instType}");
+                }
+            }
+            else if (instructions[PC].GetType() == typeof(CompareInst))
+            {
+                CompareInst Current = (CompareInst)instructions[PC];
+                CMP compare = new CMP();
+                compare.Execute(this, Current);
+            }
+            else if (instructions[PC].GetType() == typeof(BranchesInst))
+            {
+                BranchesInst Current = (BranchesInst)instructions[PC];
+                string label = Current.getLabel();
+                string condition = Current.getCondition();
+                if (condition == "R")
+                {
+                    if (labelsLocations.ContainsKey(label))
+                    {
+                        PC = labelsLocations[label];
+                    }
+                    else throw new Exception("Label doesn't exist");
+
+                }
+                else if (condition == "EQ")
+                {
+                    if (SR == "EQ")
+                    {
+                        if (labelsLocations.ContainsKey(label))
+                        {
+                            PC = labelsLocations[label];
+                        }
+                        else throw new Exception("Label doesn't exist");
+                    }
+                }
+                else if (condition == "LT")
+                {
+                    if (SR == "LT")
+                    {
+                        if (labelsLocations.ContainsKey(label))
+                        {
+                            PC = labelsLocations[label];
+                        }
+                        else throw new Exception("Label doesn't exist");
+                    }
+                }
+                else if (condition == "GT")
+                {
+                    if (SR == "GT")
+                    {
+                        if (labelsLocations.ContainsKey(label))
+                        {
+                            PC = labelsLocations[label];
+                        }
+                        else throw new Exception("Label doesn't exist");
+                    }
+                }
+                else if (condition == "NE")
+                {
+                    if (SR != "EQ")
+                    {
+                        if (labelsLocations.ContainsKey(label))
+                        {
+                            PC = labelsLocations[label];
+                        }
+                        else throw new Exception("Label doesn't exist");
+                    }
+                }
+            }
+            PC++;
+        }
+
+        public void HALT()
+        {
+            throw new HALTException("Program halted.");
+        }
 
         public string[] enterIDE()
         {
@@ -89,10 +259,10 @@ namespace ARMAssember2
             int xpos, index;
             ConsoleDrawing kbdraw;
 
-            if (rawInstructions!= null)
+            if (rawInstructions != null)
             {
                 inst = rawInstructions;
-                kbdraw = new ConsoleDrawing(new string[] { "Backspace + Space + Arrows - Self explainatory", "Esc - Exit and dont save ", "Tab - Exit and save", "F1 - Caps lock" }, keyBindsXIndex, 1, "KEYBINDS:", ConsoleColor.Yellow);
+                kbdraw = new ConsoleDrawing(new string[] { "Backspace + Space + Arrows - Self explainatory", "Esc - Exit and dont save ", "Tab - Exit and save", "F1 - Caps lock" }, 60, 1, "KEYBINDS:", ConsoleColor.Yellow);
                 kbdraw.Draw();
                 Console.SetCursorPosition(0, 0);
                 foreach (string s in inst)
@@ -195,7 +365,7 @@ namespace ARMAssember2
                         Console.SetCursorPosition(xpos, index);
                     }
                 }
-                else if (key == ConsoleKey.D1 || key == ConsoleKey.D2 || key == ConsoleKey.D3 || key == ConsoleKey.D4 || key == ConsoleKey.D5 || key == ConsoleKey.D6 || key == ConsoleKey.D7 || key == ConsoleKey.D8 || key == ConsoleKey.D9 || key == ConsoleKey.D0 )
+                else if (key == ConsoleKey.D1 || key == ConsoleKey.D2 || key == ConsoleKey.D3 || key == ConsoleKey.D4 || key == ConsoleKey.D5 || key == ConsoleKey.D6 || key == ConsoleKey.D7 || key == ConsoleKey.D8 || key == ConsoleKey.D9 || key == ConsoleKey.D0)
                 {
                     if (inst[index] != null)
                     {
@@ -213,12 +383,12 @@ namespace ARMAssember2
                     xpos++;
                     Console.SetCursorPosition(xpos, index);
                 }
-                else if(key == ConsoleKey.OemComma)
+                else if (key == ConsoleKey.OemComma)
                 {
                     if (inst[index] != null)
                     {
 
-                            inst[index] = inst[index].Substring(0, xpos) + "," + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
+                        inst[index] = inst[index].Substring(0, xpos) + "," + inst[index].Substring(inst[index].Length - (inst[index].Length - xpos));
 
                     }
                     else
@@ -276,7 +446,7 @@ namespace ARMAssember2
                 {
                     if (xpos != inst[index].Length)
                     {
-                        inst[index] = inst[index].Substring(0, xpos) + inst[index].Substring(xpos+1);
+                        inst[index] = inst[index].Substring(0, xpos) + inst[index].Substring(xpos + 1);
                         Console.SetCursorPosition(0, index);
                         Console.Write(inst[index] + " ");
                         Console.SetCursorPosition(xpos, index);
@@ -294,13 +464,13 @@ namespace ARMAssember2
                 }
                 else if (key == ConsoleKey.Enter)
                 {
-                    string[] temp = new string[inst.Length+1];
-                    for(int i = 0; i <= index; i++)
+                    string[] temp = new string[inst.Length + 1];
+                    for (int i = 0; i <= index; i++)
                     {
                         temp[i] = inst[i];
                     }
                     temp[index + 1] = "";
-                    for(int i = index + 2; i < temp.Length; i++)
+                    for (int i = index + 2; i < temp.Length; i++)
                     {
                         temp[i] = inst[i - 1];
                     }
@@ -312,8 +482,8 @@ namespace ARMAssember2
                     kbdraw.Draw();
                     xpos = 0;
                     index++;
-                    Console.SetCursorPosition (xpos, index);
-                    inst = temp;    
+                    Console.SetCursorPosition(xpos, index);
+                    inst = temp;
                 }
                 else
                 {
@@ -349,23 +519,22 @@ namespace ARMAssember2
                 }
             }
         }
-        public string getFilePath()
-        {
-            return filepath;
-        }
-        public void Reset()
-        {
-            for(int i = 0; i < Registers.Length; i++)
-            {
-                Registers[i] = 0;
-                Memory[i] = 0;
-            }
-            PC = 0;
-            SR = "N/A";
-        }
 
-        public int getMaxLines() { return maxLines; }
+        // Gui stuff
+        public void displayGUI(string errorOrMsg = "")
+        {
+            DrawInstructions.DrawAndHighlightLineNumber(PC);
+            drawRegisters();
+            drawMemoryAdds();
+            drawSR();
+            drawPC();
+            drawError();
+            drawEscthing();
+            drawKeybinds();
+            drawBlankInputBox();
 
+            drawCorners();
+        }
         private string[] buildsKeyBinds()
         {
             string[] keybinds = new string[9];
@@ -382,38 +551,18 @@ namespace ARMAssember2
 
 
         }
-        public string[] getRawInst()
-        {
-            return rawInstructions;
-        }
-        
-        public int getMemorylength() { return Memory.Length; }  
-        public int getRegisterLength() { return Registers.Length; }
+
         public void drawBlankInputBox()
         {
             string[] str = new string[1];
-            str[0] = "                                   "; 
-            ConsoleDrawing inpdraw = new ConsoleDrawing(str , keyBindsXIndex, 12, "INPUT:", ConsoleColor.Green);
+            str[0] = "                                   ";
+            ConsoleDrawing inpdraw = new ConsoleDrawing(str, keyBindsXIndex, 12, "INPUT:", ConsoleColor.Green);
             inpdraw.Draw();
             Console.SetCursorPosition(keyBindsXIndex + 38, 12);
             Console.Write("╣");
             Console.SetCursorPosition(keyBindsXIndex, 12);
             Console.Write("╠");
 
-        }
-        public void displayGUI(string errorOrMsg = "")
-        {    
-            DrawInstructions.DrawAndHighlightLineNumber(PC);
-            drawRegisters();
-            drawMemoryAdds();
-            drawSR();
-            drawPC();
-            drawError();
-            drawEscthing();
-            drawKeybinds();
-            drawBlankInputBox();
-
-            drawCorners();
         }
         public int getKeyBindsX()
         {
@@ -429,27 +578,27 @@ namespace ARMAssember2
         {
             string[] temp = new string[1];
             temp[0] = SR;
-            ConsoleDrawing statusdraw = new ConsoleDrawing(temp , 2, largestStorage+3, "SR:", ConsoleColor.Yellow);
+            ConsoleDrawing statusdraw = new ConsoleDrawing(temp, 2, largestStorage + 3, "SR:", ConsoleColor.Yellow);
             statusdraw.DrawCentrally();
         }
         private void drawPC()
         {
             string[] temp = new string[1];
             temp[0] = PC.ToString(); ;
-            ConsoleDrawing PCdraw = new ConsoleDrawing(temp, 8, largestStorage+3, "PC: ", ConsoleColor.Yellow);
+            ConsoleDrawing PCdraw = new ConsoleDrawing(temp, 8, largestStorage + 3, "PC: ", ConsoleColor.Yellow);
             PCdraw.DrawCentrally();
         }
         public void drawError(string error = null)
         {
-            ConsoleDrawing Errors = new ConsoleDrawing(new string[] { " " }, 0,0);
+            ConsoleDrawing Errors = new ConsoleDrawing(new string[] { " " }, 0, 0);
             if (error != null)
             {
-                if(error.Length > 30)
+                if (error.Length > 30)
                 {
                     string[] arr = new string[7];
                     string[] temp = error.Split(' ');
                     int current = 0;
-                    for(int i = 0; i < temp.Length; i++)
+                    for (int i = 0; i < temp.Length; i++)
                     {
                         if (arr[current] != null)
                         {
@@ -458,15 +607,15 @@ namespace ARMAssember2
                                 current++;
                                 arr[current] = temp[i];
                             }
-                            else arr[current] += " " + temp[i]; 
+                            else arr[current] += " " + temp[i];
                         }
-                        else arr[current] = temp[i];    
+                        else arr[current] = temp[i];
 
                     }
                     current++;
-                    if(current < 7)
+                    if (current < 7)
                     {
-                        for(int i = current; i < 7; i++)
+                        for (int i = current; i < 7; i++)
                         {
                             arr[i] = " ";
                         }
@@ -495,7 +644,7 @@ namespace ARMAssember2
 
         private void drawCorners()
         {
-            Console.SetCursorPosition(2, 19 + (largestStorage-16));
+            Console.SetCursorPosition(2, 19 + (largestStorage - 16));
             Console.Write("╠");
             Console.SetCursorPosition(8, 19 + (largestStorage - 16));
             Console.Write("╦");
@@ -515,11 +664,11 @@ namespace ARMAssember2
             Console.Write("╣");
             Console.SetCursorPosition(35, 1);
             Console.Write("╦");
-            Console.SetCursorPosition(keyBindsXIndex, 11);
+            Console.SetCursorPosition(keyBindsXIndex, 12);
             Console.Write("╠");
             Console.SetCursorPosition(keyBindsXIndex, rawInstructions.Length + 3);
             Console.Write("╣");
-            Console.SetCursorPosition(keyBindsXIndex+38, 11);
+            Console.SetCursorPosition(keyBindsXIndex + 38, 12);
             Console.Write("╣");
             if (rawInstructions.Length + 3 <= 28)
             {
@@ -541,9 +690,15 @@ namespace ARMAssember2
             {
                 Console.SetCursorPosition(35, 29);
                 Console.Write("╣");
-                
-                   
-                
+
+
+
+
+            }
+            if (rawInstructions.Length + 3 == 12)
+            {
+                Console.SetCursorPosition(keyBindsXIndex, 12);
+                Console.Write("╬");
             }
             Console.SetCursorPosition(keyBindsXIndex, 1);
             Console.Write("╦");
@@ -592,192 +747,44 @@ namespace ARMAssember2
             DrawMemory.Draw();
 
         }
-        public void Step()
-        {
-            if (instructions[PC].GetType() == typeof(HALT))
-            {
-                HALT();
-            }
-            else if (instructions[PC].GetType() == typeof(Label))
-            {
-               // pass on labels
-            }
-            else if(instructions[PC].GetType() == typeof(ThreeParameterInst))
-            {
-                Dictionary<string, Type> ThreeParInstMap = new Dictionary<string, Type>()
-                {
-                    {"ADD", typeof(ADD) },
-                    {"SUB", typeof(SUB) },
-                    {"AND", typeof(AND) },
-                    {"ORR", typeof(ORR) },
-                    {"EOR", typeof(EOR) },
-                    {"LSL", typeof(LSL) },
-                    {"LSR", typeof(LSR) }
-                };
-                ThreeParameterInst current = (ThreeParameterInst) instructions[PC];
-                ThreeParameterInst Current = current.Clone();
-                string addressingType = Current.getAddressingType();
-                int baseOperand = Current.getOperand2();
-                string instType = Current.GetInstType();
-                if(addressingType == "im")
-                {
-                    // nothing to be done as operand 2 already set properly in constructor
-                }
-                else if (addressingType == "dr")
-                {
-                    Current.setOperand2(Registers[Current.getOperand2()]);
-                }
-                else if (addressingType == "dm")
-                {
-                    Current.setOperand2(Memory[Current.getOperand2()]);
-                }
-                else if (addressingType == "indr")
-                {
-                    Current.setOperand2(Memory[Registers[Current.getOperand2()]]);
-                }
 
-                if (ThreeParInstMap.ContainsKey(instType))
-                {
-                    ThreeParameterExecutes inst = (ThreeParameterExecutes)Activator.CreateInstance(ThreeParInstMap[instType]);
-                    inst.Execute(this, Current);
-                }
-                else
-                {
-                    throw new Exception($"You forgot to implement the inst map for the inst type {instType}");
-                }
-            }
-            else if (instructions[PC].GetType() == typeof(TwoParameterInst))
-            {
-                Dictionary<string, Type> TwoParInstMap = new Dictionary<string, Type>()
-                {
-                    {"LDR", typeof(LDR) },
-                    {"STR", typeof(STR) },
-                    {"MOV", typeof(MOV) },
-                    {"MVN", typeof(MVN) },
-                };
-                TwoParameterInst current = (TwoParameterInst)instructions[PC];
-                TwoParameterInst Current = current.Clone();
-                string addressingType = Current.getAddressingType();
-                int baseOperand = Current.getOperand2();
-                string instType = Current.GetInstType();
-                if (instType != "STR")
-                {
-                    if (addressingType == "im")
-                    {
-                        // nothing to be done as operand 2 already set properly in constructor
-                    }
-                    else if (addressingType == "dr")
-                    {
-                        Current.setOperand2(Registers[Current.getOperand2()]);
-                    }
-                    else if (addressingType == "dm")
-                    {
-                        Current.setOperand2(Memory[Current.getOperand2()]);
-                    }
-                    else if (addressingType == "indr")
-                    {
-                        Current.setOperand2(Memory[Registers[Current.getOperand2()]]);
-                    }
-                }
-            
-            
-
-
-
-                if (TwoParInstMap.ContainsKey(instType))
-                {
-                    TwoParameterExecutes inst = (TwoParameterExecutes)Activator.CreateInstance(TwoParInstMap[instType]);
-                    inst.Execute(this, Current);
-                }
-                else
-                {
-                    throw new Exception($"You forgot to implement the inst map for the inst type {instType}");
-                }
-            }
-            else if(instructions[PC].GetType() == typeof(CompareInst))
-            {
-                CompareInst Current = (CompareInst)instructions[PC];
-                CMP compare = new CMP();
-                compare.Execute(this, Current);
-            }
-            else if (instructions[PC].GetType() == typeof(BranchesInst))
-            {
-                BranchesInst Current = (BranchesInst)instructions[PC];
-                string label = Current.getLabel();
-                string condition = Current.getCondition();
-                if (condition == "R")
-                {
-                    if (labelsLocations.ContainsKey(label))
-                    {
-                        PC = labelsLocations[label];
-                    }
-                    else throw new Exception("Label doesn't exist");
-
-                }
-                else if (condition == "EQ")
-                {
-                    if (SR == "EQ")
-                    {
-                        if (labelsLocations.ContainsKey(label))
-                        {
-                            PC = labelsLocations[label];
-                        }
-                        else throw new Exception("Label doesn't exist");
-                    }
-                }
-                else if (condition == "LT")
-                {
-                    if (SR == "LT")
-                    {
-                        if (labelsLocations.ContainsKey(label))
-                        {
-                            PC = labelsLocations[label];
-                        }
-                        else throw new Exception("Label doesn't exist");
-                    }
-                }
-                else if (condition == "GT")
-                {
-                    if (SR == "GT")
-                    {
-                        if (labelsLocations.ContainsKey(label))
-                        {
-                            PC = labelsLocations[label];
-                        }
-                        else throw new Exception("Label doesn't exist");
-                    }
-                }
-                else if (condition == "NE")
-                {
-                    if (SR != "EQ")
-                    {
-                        if (labelsLocations.ContainsKey(label))
-                        {
-                            PC = labelsLocations[label];
-                        }
-                        else throw new Exception("Label doesn't exist");
-                    }
-                }
-            }
-            PC++;
-        }
-
-        public void HALT()
-        {
-            throw new HALTException("Program halted.");
-        }
+        // Getters and setters
         public string getSR() { return SR; }
         public void setSR(string s) { SR = s + " "; }
-        public int GetRegisterVal(int index) { return Registers[index]; }   
-        public int GetMemoryVal(int index) {return Memory[index]; }
+        public int GetRegisterVal(int index) { return Registers[index]; }
+        public int GetMemoryVal(int index) { return Memory[index]; }
 
         public void SetRegisterVal(int index, int val) { Registers[index] = val; }
         public void SetMemoryVal(int index, int val) { Memory[index] = val; }
         public void SetPC(int value) { PC = value; }
 
-        public int GetPC() 
+        public int GetPC()
         {
             return PC;
+        }
+
+        public string getFilePath()
+        {
+            return filepath;
+        }
+        public void Reset()
+        {
+            for (int i = 0; i < Registers.Length; i++)
+            {
+                Registers[i] = 0;
+                Memory[i] = 0;
+            }
+            PC = 0;
+            SR = "N/A";
+        }
+
+        public int getMaxLines() { return maxLines; }
+        public int getMemorylength() { return Memory.Length; }
+        public int getRegisterLength() { return Registers.Length; }
+
+        public string[] getRawInst()
+        {
+            return rawInstructions;
         }
     }
 }

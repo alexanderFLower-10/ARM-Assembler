@@ -1,0 +1,6 @@
+MOV R1, #7
+LDR R0, 1
+EOR R3, R1, R0
+STR R3, 0
+HALT
+
