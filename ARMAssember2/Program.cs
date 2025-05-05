@@ -169,6 +169,12 @@ namespace ARMAssember2
                         Console.Clear();
                         ARM = new ARMEmulator( getInstListSafe(rawInst),rawInst, ARM.getFilePath());
                     }
+                    else if (key == ConsoleKey.S)
+                    {
+
+                        ARM.Reset();
+                        ARM.displayGUI();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -1132,7 +1138,7 @@ namespace ARMAssember2
             Console.ReadLine();
             Console.ForegroundColor = ConsoleColor.Gray;
         }
-        static void attemptM1(ARMEmulator userProgram)
+        static void attemptE3(ARMEmulator userProgram)
         {
             ARMEmulator solution = getSolution(1, "M");
             Console.ForegroundColor = ConsoleColor.Green;
@@ -1160,7 +1166,7 @@ namespace ARMAssember2
             Console.ReadLine();
         }
 
-        static void attemptE3(ARMEmulator userProgram)
+        static void attemptM1(ARMEmulator userProgram)
         {
             ARMEmulator solution = getSolution(3, "E");
             Console.ForegroundColor = ConsoleColor.Green;
@@ -1262,14 +1268,15 @@ namespace ARMAssember2
                 }
                 if(num == 3)
                 {
-                    Console.WriteLine("Branches And Comparisons Introduction\r\n> I have 2 unique numbers stored in memory locations 1 and 2\r\n> Please compare the 2 and output the result of the largest one multiplied by 2\r\n> Extension: Think about what bitwise operation could multiply a number by 2\r\n> Bitwise operations are faster than adding");
+                    Console.WriteLine("Logic gates\r\n> Value A is stored in memory address 1\r\n> Value B is stored in memory address 2\r\n> Carry out the following operation and store the result in memory address 0\r\n> NOT( (A \u2022 B) \u2022 (A + B)) ");
                 }
             }
             else if (diff == "M")
             {
                 if (num == 1)
                 {
-                    Console.WriteLine("Logic gates\r\n> Value A is stored in memory address 1\r\n> Value B is stored in memory address 2\r\n> Carry out the following operation and store the result in memory address 0\r\n> NOT( (A \u2022 B) \u2022 (A + B)) ");
+                    Console.WriteLine("Branches And Comparisons Introduction\r\n> I have 2 unique numbers stored in memory locations 1 and 2\r\n> Please compare the 2 and output the result of the largest one multiplied by 2\r\n> Extension: Think about what bitwise operation could multiply a number by 2\r\n> Bitwise operations are faster than adding");
+
                 }
             }
             else if (diff == "H")
@@ -1302,14 +1309,14 @@ namespace ARMAssember2
                 }
                 if (num == 3)
                 {
-                    Console.WriteLine("Required Instructions:\nLDR\nSTR\nCMP\nBLT/BGT\nLSL/ADD");
+                    Console.WriteLine("Required Instructions:\nLDR\nSTR\nAND\nORR\nMVN");
                 }
             }
             else if (diff == "M")
             {
                 if (num == 1)
                 {
-                    Console.WriteLine("Required Instructions:\nLDR\nSTR\nAND\nORR\nMVN");
+                    Console.WriteLine("Required Instructions:\nLDR\nSTR\nCMP\nBLT/BGT\nLSL/ADD");
                 }
 
             }

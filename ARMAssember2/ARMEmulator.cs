@@ -299,7 +299,7 @@ namespace ARMAssember2
             keybinds[4] = "J - Jump to line number";
             keybinds[5] = "Q - Run program to line number";
             keybinds[6] = "Backspace - Go back a line";
-            keybinds[7] = "Shift - Reset program";
+            keybinds[7] = "S - Reset program";
             keybinds[8] = "I - Edit Program";
             return keybinds;
 
