@@ -79,7 +79,7 @@ namespace ARMAssember2
         {
             while (instructions[PC].GetType() == typeof(WhiteSpace))
             {
-                PC++;
+                PC++;   
             }
             if (instructions[PC].GetType() == typeof(HALT))
             {
@@ -221,7 +221,7 @@ namespace ARMAssember2
                 }
                 else if (condition == "EQ")
                 {
-                    if (SR == "EQ")
+                    if (SR == "EQ ")
                     {
                         if (labelsLocations.ContainsKey(label))
                         {
@@ -232,7 +232,7 @@ namespace ARMAssember2
                 }
                 else if (condition == "LT")
                 {
-                    if (SR == "LT")
+                    if (SR == "LT ")
                     {
                         if (labelsLocations.ContainsKey(label))
                         {
@@ -243,16 +243,16 @@ namespace ARMAssember2
                 }
                 else if (condition == "GT")
                 {
-                    if (SR == "GT")
+                    if (SR == "GT ")
                     {
                         if (labelsLocations.ContainsKey(label))
                         {
-                            PC = labelsLocations[label];
+                            PC = labelsLocations[label]; 
                         }
                         else throw new Exception("Label doesn't exist");
                     }
                 }
-                else if (condition == "NE")
+                else if (condition == "NE ")
                 {
                     if (SR != "EQ")
                     {

@@ -124,11 +124,18 @@ namespace ARMAssember2
                     {
                         while (true)
                         {
+                            try
+                            {
 
-                            ARM.Step();
-                            displayEverything(ARM);
+                                ARM.Step();
+                            }
+                            catch (HALTException)
+                            {
+                                break;
+                            }
 
                         }
+                        displayEverything(ARM);
                     }
                     else if (key == ConsoleKey.Escape)
                     {
@@ -904,6 +911,13 @@ namespace ARMAssember2
                     attemptM1(userprogram);
                 }
             }
+            else if (diff == "H")
+            {
+                if (num == 1)
+                {
+                    attemptH1(userprogram);
+                }
+            }
         }
 
         static ARMEmulator getSolution(int num, string diff)
@@ -1201,6 +1215,36 @@ namespace ARMAssember2
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.ReadLine();
         }
+
+        static void attemptH1(ARMEmulator userProgram)
+        {
+            string[] rawInst = userProgram.getRawInst();
+
+            ARMEmulator solution = getSolution(2, "E");
+            Console.ForegroundColor = ConsoleColor.Green;
+            for (int i = 0; i < 1000; i++)
+            {
+                int testCaseMVal1 = inputOneValTestCases(solution, userProgram, "M1");
+                int requiredresult = testCase(solution, "M", 0);
+                solution.Reset();
+                int userresult = testCase(userProgram, "M", 0);
+                userProgram.Reset();
+
+
+                if (userresult != requiredresult)
+                {
+                    failTestCase($"Testcase {i + 1} FAILED: M1 = {testCaseMVal1} Expected M0 = {requiredresult} Your M0 = {userresult}");
+                }
+                else
+                {
+                    Console.WriteLine(oneInputPassedResultBuilder(i + 1, "M1", testCaseMVal1, "M0", requiredresult, userresult));
+                }
+            }
+            Console.WriteLine("Program is valid");
+            Console.ReadLine();
+            Console.ForegroundColor = ConsoleColor.Gray;
+        }
+
         static void failTestCase(string message)
         {
             Console.ForegroundColor = ConsoleColor.DarkRed;
